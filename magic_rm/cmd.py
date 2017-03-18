@@ -3,6 +3,7 @@
 #
 # Author Georgy Schapchits <gogi.soft.gm@gmail.com>.
 import argparse
+from magic_rm.deleter import MagicDeleter
 
 def parse_args():
     parser = argparse.ArgumentParser(description='****Magic remove tool****')
@@ -27,6 +28,16 @@ def parse_args():
 
 def main():
     args = vars(parse_args())
+
+    deleter = MagicDeleter()
+
+    for name, value in args.iteritems():
+        if hasattr(deleter, name):
+            setattr(deleter, name, value)
+
+    if args['command'] == 'remove':
+        for path in args['PATH']:
+            deleter.remove(path)
 
 if __name__ == '__main__':
     main()
