@@ -15,13 +15,20 @@ class MagicDeleter(object):
                  force=False,
                  interactive=False,
                  recursive=False,
-                 empty_dir=False):
+                 empty_dir=False,
+                 trasher=None,
+                 no_remove=False):
         self.force = force
         self.interactive = interactive
         self.recursive = recursive
         self.empty_dir = empty_dir
+        self.is_remove = not no_remove
+        self.trasher = trasher
+        self._root = None
 
     def remove(self, path):
+        self._root = os.path.dirname(os.path.abspath(path))
+
         if not os.path.exists(path):
             self.alert("cannot remove '{}': No such file or directory".format(path))
         else:
@@ -46,11 +53,17 @@ class MagicDeleter(object):
             remove(path)
 
     def remove_file(self, path):
+        def remove():
+            if self.trasher != None:
+                self.trasher.move_to_trash(path, self._root)
+            if self.is_remove:
+                os.remove(path)
+
         if os.access(path, os.W_OK):
             if self.ask("remove regular file '{}'?".format(path)):
-                os.remove(path)
+                remove()
         elif self.ask("remove write-protected regular file'{}'?".format(path), warning=True):
-            os.remove(path)
+            remove()
 
     def _remove(self, path):
         if os.path.isdir(path):
@@ -75,11 +88,15 @@ class MagicDeleter(object):
 
     def _remove_empty_dir(self, path):
         try:
+            def rmdir():
+                if self.is_remove:
+                    os.rmdir(path)
+
             if os.access(path, os.W_OK):
                 if self.ask("remove directory '{}'?".format(path)):
-                    os.rmdir(path)
+                    rmdir()
             elif self.ask("remove protected directory '{}'?".format(path), warning=True):
-                os.rmdir(path)
+                rmdir()
         except OSError as err:
             self.alert(err.strerror)
 

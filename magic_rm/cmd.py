@@ -4,6 +4,7 @@
 # Author Georgy Schapchits <gogi.soft.gm@gmail.com>.
 import argparse
 from magic_rm.deleter import MagicDeleter
+from magic_rm.trasher import MagicTrasher
 
 def parse_args():
     parser = argparse.ArgumentParser(description='****Magic remove tool****')
@@ -22,21 +23,30 @@ def parse_args():
     remove_parser.add_argument('-d', '--dir', action='store_true', dest='emptyDir',
                                help='remove empty directories')
 
+    remove_parser.add_argument('--no-trash', action='store_true', dest='no_trash',
+                               help='Don\'t save files in trash')
+    remove_parser.add_argument('--no-remove', action='store_true', dest='no_remove',
+                               help='Don\'t remove files')
+    remove_parser.add_argument('--trash_path', action='store', dest='trash_path',
+                               default="/home/goginet/trasher", help='Path to trash directory')
+
     parser.add_argument('PATH', nargs='+', help='output version information and exit')
 
     return parser.parse_args()
 
 def main():
-    args = vars(parse_args())
+    args = parse_args()
 
-    deleter = MagicDeleter()
+    trasher = MagicTrasher(trash_path=args.trash_path)
+    deleter = MagicDeleter(force=args.force,
+                           interactive=args.interactive,
+                           recursive=args.recursive,
+                           empty_dir=args.emptyDir,
+                           trasher=trasher,
+                           no_remove=args.no_remove)
 
-    for name, value in args.iteritems():
-        if hasattr(deleter, name):
-            setattr(deleter, name, value)
-
-    if args['command'] == 'remove':
-        for path in args['PATH']:
+    if args.command == 'remove':
+        for path in args.PATH:
             deleter.remove(path)
 
 if __name__ == '__main__':
