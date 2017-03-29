@@ -24,6 +24,9 @@ def parse_args():
     remove_parser.add_argument('-d', '--dir', action='store_true', dest='emptyDir',
                                help='remove empty directories')
 
+    restore_parser.add_argument('-f', '--force', action='store_true', dest='force',
+                                help='restore when item already exists')
+
     remove_parser.add_argument('--no-trash', action='store_true', dest='no_trash',
                                help='Don\'t save files in trash')
     remove_parser.add_argument('--no-remove', action='store_true', dest='no_remove',
@@ -32,6 +35,7 @@ def parse_args():
                         default="/home/goginet/trasher", help='Path to trash directory')
 
     remove_parser.add_argument('PATH', nargs='+', help='output version information and exit')
+    restore_parser.add_argument('PATH', nargs='+', help='output version information and exit')
 
     return parser.parse_args()
 
@@ -47,7 +51,8 @@ def main():
     args = parse_args()
 
     def create_trasher():
-        return MagicTrasher(trash_path=args.trash_path)
+        return MagicTrasher(trash_path=args.trash_path,
+                            force=getattr(args, "force", False))
 
     def create_deleter(trasher):
         return MagicDeleter(force=args.force,
@@ -65,6 +70,10 @@ def main():
     if args.command == 'trash-list':
         trasher = create_trasher()
         print_trash_list(trasher)
+    if args.command == 'restore':
+        trasher = create_trasher()
+        for path in args.PATH:
+            trasher.restore(path)
 
 if __name__ == '__main__':
     main()
