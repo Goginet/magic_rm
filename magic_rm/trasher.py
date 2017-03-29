@@ -8,23 +8,37 @@ import shutil
 import pickle
 import datetime
 
+def meta_update(func):
+
+    def wrapper(self, *args):
+        trash_items = {}
+        if os.path.exists(self.meta_file_path):
+            with open(self.meta_file_path, 'rb') as f:
+                trash_items = pickle.load(f)
+
+        rez = func(self, *args, trash_items=trash_items)
+
+        with open(self.meta_file_path, 'wb') as f:
+            pickle.dump(trash_items, f)
+
+        return rez
+
+    return wrapper
+
 class MagicTrasher(object):
 
     def __init__(self, trash_path=None):
         self.trash_path = trash_path
         self.meta_file_path = os.path.join(trash_path, "meta.db")
 
-    def meta_add(self, path_in_trash, path):
-        trash_items = {}
-        if os.path.exists(self.meta_file_path):
-            with open(self.meta_file_path, 'rb') as f:
-                trash_items = pickle.load(f)
-
+    @meta_update
+    def meta_add(self, path_in_trash, path, trash_items=None):
         trash_items.update({os.path.basename(path_in_trash): {"real_path": path,
                                                               "time": datetime.datetime.now()}})
 
-        with open(self.meta_file_path, 'wb') as f:
-            pickle.dump(trash_items, f)
+    @meta_update
+    def meta_list(self, trash_items=None):
+        return trash_items
 
     def move_to_trash(self, path):
         if self.trash_path != None:
@@ -55,12 +69,7 @@ class MagicTrasher(object):
             self.alert("Trash path not set")
 
     def list_trash(self):
-        trash_items = {}
-        if os.path.exists(self.meta_file_path):
-            with open(self.meta_file_path, 'rb') as f:
-                trash_items = pickle.load(f)
-
-        return trash_items
+        return self.meta_list()
 
     def alert(self, message):
         print message
