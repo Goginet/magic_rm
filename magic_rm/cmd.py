@@ -36,12 +36,12 @@ def parse_args():
     return parser.parse_args()
 
 def print_trash_list(trasher):
-    arr = trasher.list_trash()
+    meta = trasher.list_trash()
     template = "|{:^30}|{:^30}|"
     print template.format('item', 'time')
     print "|{:-^30}|{:-^30}|".format('', '')
-    for el in arr:
-        print template.format(el['item'], el['time'].strftime("%y-%m-%d %H:%M:%S"))
+    for name, el in meta.iteritems():
+        print template.format(name, el['time'].strftime("%y-%m-%d %H:%M:%S"))
 
 def main():
     args = parse_args()

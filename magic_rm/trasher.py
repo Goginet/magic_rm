@@ -14,14 +14,14 @@ class MagicTrasher(object):
         self.trash_path = trash_path
         self.meta_file_path = os.path.join(trash_path, "meta.db")
 
-    def update_meta_inf(self, path_in_trash, path):
-        trash_items = []
+    def meta_add(self, path_in_trash, path):
+        trash_items = {}
         if os.path.exists(self.meta_file_path):
             with open(self.meta_file_path, 'rb') as f:
                 trash_items = pickle.load(f)
 
-        trash_items.append({"item": os.path.basename(path_in_trash),
-                            "real_path": path, "time": datetime.datetime.now()})
+        trash_items.update({os.path.basename(path_in_trash): {"real_path": path,
+                                                              "time": datetime.datetime.now()}})
 
         with open(self.meta_file_path, 'wb') as f:
             pickle.dump(trash_items, f)
@@ -50,12 +50,12 @@ class MagicTrasher(object):
             else:
                 shutil.copy(path, path_in_trash)
 
-            self.update_meta_inf(path_in_trash, path)
+            self.meta_add(path_in_trash, path)
         else:
             self.alert("Trash path not set")
 
     def list_trash(self):
-        trash_items = []
+        trash_items = {}
         if os.path.exists(self.meta_file_path):
             with open(self.meta_file_path, 'rb') as f:
                 trash_items = pickle.load(f)
