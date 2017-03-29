@@ -24,10 +24,10 @@ class MagicDeleter(object):
         self.empty_dir = empty_dir
         self.is_remove = not no_remove
         self.trasher = trasher
-        self._root = None
 
     def remove(self, path):
-        self._root = os.path.dirname(os.path.abspath(path))
+        if self.trasher != None:
+            self.trasher.move_to_trash(path)
 
         if not os.path.exists(path):
             self.alert("cannot remove '{}': No such file or directory".format(path))
@@ -54,8 +54,6 @@ class MagicDeleter(object):
 
     def remove_file(self, path):
         def remove():
-            if self.trasher != None:
-                self.trasher.move_to_trash(path, self._root)
             if self.is_remove:
                 os.remove(path)
 

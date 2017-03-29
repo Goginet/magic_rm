@@ -14,22 +14,19 @@ class MagicTrasher(object):
         self.trash_path = trash_path
         self.meta_file_path = os.path.join(trash_path, "meta.db")
 
-    def update_meta_inf(self, path, real_path):
+    def update_meta_inf(self, path_in_trash, path):
         trash_items = []
         if os.path.exists(self.meta_file_path):
             with open(self.meta_file_path, 'rb') as f:
                 trash_items = pickle.load(f)
 
-        trash_items.append({"path": path, "real_path": real_path, "time": datetime.datetime.now()})
+        trash_items.append({"item": os.path.basename(path_in_trash),
+                            "real_path": path, "time": datetime.datetime.now()})
 
         with open(self.meta_file_path, 'wb') as f:
             pickle.dump(trash_items, f)
 
-    def move_to_trash(self, path, root_dir):
-        if root_dir is None:
-            # TODO: raise NoneRootExeption
-            return
-
+    def move_to_trash(self, path):
         if self.trash_path != None:
             def inc_path(path, index):
                 new_path = path + "_({})".format(index)
@@ -40,26 +37,20 @@ class MagicTrasher(object):
 
             path = os.path.abspath(path)
 
-            relpath = os.path.relpath(path, start=root_dir)
-
-            file_path = os.path.join(self.trash_path, relpath)
-
-            dir_path = os.path.dirname(file_path)
+            path_in_trash = os.path.join(self.trash_path, os.path.basename(path))
 
             if not os.path.exists(self.trash_path):
                 os.makedirs(self.trash_path)
 
-            if dir_path == self.trash_path:
-                if os.path.exists(file_path):
-                    file_path = inc_path(file_path, 1)
+            if os.path.exists(path_in_trash):
+                path_in_trash = inc_path(path_in_trash, 1)
+
+            if os.path.isdir(path):
+                shutil.copytree(path, path_in_trash, symlinks=True)
             else:
-                if os.path.exists(dir_path):
-                    dir_path = inc_path(dir_path, 1)
+                shutil.copy(path, path_in_trash)
 
-                os.makedirs(dir_path)
-
-            shutil.copy(path, file_path)
-            self.update_meta_inf(file_path, path)
+            self.update_meta_inf(path_in_trash, path)
         else:
             self.alert("Trash path not set")
 
