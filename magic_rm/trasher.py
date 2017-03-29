@@ -12,16 +12,18 @@ def meta_update(func):
 
     def wrapper(self, *args):
         trash_items = {}
-        if os.path.exists(self.meta_file_path):
-            with open(self.meta_file_path, 'rb') as f:
-                trash_items = pickle.load(f)
 
-        rez = func(self, *args, trash_items=trash_items)
+        if os.path.exists(self.trash_path):
+            if os.path.exists(self.meta_file_path):
+                with open(self.meta_file_path, 'rb') as f:
+                    trash_items = pickle.load(f)
 
-        with open(self.meta_file_path, 'wb') as f:
-            pickle.dump(trash_items, f)
+            trash_items = func(self, *args, trash_items=trash_items)
 
-        return rez
+            with open(self.meta_file_path, 'wb') as f:
+                pickle.dump(trash_items, f)
+
+        return trash_items
 
     return wrapper
 
