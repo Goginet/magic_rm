@@ -54,5 +54,13 @@ class MagicTrasher(object):
         else:
             self.alert("Trash path not set")
 
+    def list_trash(self):
+        trash_items = []
+        if os.path.exists(self.meta_file_path):
+            with open(self.meta_file_path, 'rb') as f:
+                trash_items = pickle.load(f)
+
+        return trash_items
+
     def alert(self, message):
         print message

@@ -13,6 +13,7 @@ def parse_args():
 
     remove_parser = subparser.add_parser('remove')
     restore_parser = subparser.add_parser('restore')
+    trash_list_parser = subparser.add_parser('trash-list')
 
     remove_parser.add_argument('-f', '--force', action='store_true', dest='force',
                                help='ignore nonexistent files and arguments, never prompt')
@@ -27,27 +28,43 @@ def parse_args():
                                help='Don\'t save files in trash')
     remove_parser.add_argument('--no-remove', action='store_true', dest='no_remove',
                                help='Don\'t remove files')
-    remove_parser.add_argument('--trash_path', action='store', dest='trash_path',
-                               default="/home/goginet/trasher", help='Path to trash directory')
+    parser.add_argument('--trash_path', action='store', dest='trash_path',
+                        default="/home/goginet/trasher", help='Path to trash directory')
 
-    parser.add_argument('PATH', nargs='+', help='output version information and exit')
+    remove_parser.add_argument('PATH', nargs='+', help='output version information and exit')
 
     return parser.parse_args()
+
+def print_trash_list(trasher):
+    arr = trasher.list_trash()
+    template = "|{:^30}|{:^30}|"
+    print template.format('item', 'time')
+    print "|{:-^30}|{:-^30}|".format('', '')
+    for el in arr:
+        print template.format(el['item'], el['time'].strftime("%y-%m-%d %H:%M:%S"))
 
 def main():
     args = parse_args()
 
-    trasher = MagicTrasher(trash_path=args.trash_path)
-    deleter = MagicDeleter(force=args.force,
-                           interactive=args.interactive,
-                           recursive=args.recursive,
-                           empty_dir=args.emptyDir,
-                           trasher=trasher,
-                           no_remove=args.no_remove)
+    def create_trasher():
+        return MagicTrasher(trash_path=args.trash_path)
+
+    def create_deleter(trasher):
+        return MagicDeleter(force=args.force,
+                            interactive=args.interactive,
+                            recursive=args.recursive,
+                            empty_dir=args.emptyDir,
+                            trasher=trasher,
+                            no_remove=args.no_remove)
 
     if args.command == 'remove':
+        trasher = create_trasher()
+        deleter = create_deleter(trasher)
         for path in args.PATH:
             deleter.remove(path)
+    if args.command == 'trash-list':
+        trasher = create_trasher()
+        print_trash_list(trasher)
 
 if __name__ == '__main__':
     main()
