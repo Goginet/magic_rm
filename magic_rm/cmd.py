@@ -3,12 +3,15 @@
 #
 # Author Georgy Schapchits <gogi.soft.gm@gmail.com>.
 import argparse
+import toml
+import json
 from magic_rm.deleter import MagicDeleter
 from magic_rm.trasher import MagicTrasher
 
 def grouped_args(args, new_args, *groups):
     for group in groups:
-        new_args.update({group: {}})
+        if new_args.get(group) is None:
+            new_args.update({group: {}})
 
     for name, value in args.iteritems():
         dest = name.split(".", 2)
@@ -19,6 +22,16 @@ def grouped_args(args, new_args, *groups):
         else:
             new_args.update({dest[0]: value})
     return new_args
+
+def load_toml_config(path):
+    with open(path) as config_file:
+        config_args = toml.load(config_file)
+        return config_args
+
+def load_json_config(path):
+    with open(path) as config_file:
+        config_args = json.load(config_file)
+        return config_args
 
 def parse_args():
     parser = argparse.ArgumentParser(description='****Magic remove tool****')
@@ -48,10 +61,25 @@ def parse_args():
     parser.add_argument('--trash_path', action='store', dest='trash.path',
                         default="/home/goginet/trasher", help='Path to trash directory')
 
+    config_group = parser.add_mutually_exclusive_group()
+    config_group.add_argument('--config', action='store', dest='config_toml',
+                              default="magic_rm.conf", help='Path to config file (TOML format)')
+    config_group.add_argument('--config-json', action='store', dest='config_json',
+                              help='Path to config file (JSON format)')
+
     remove_parser.add_argument('PATH', nargs='+', help='output version information and exit')
     restore_parser.add_argument('PATH', nargs='+', help='output version information and exit')
 
-    return grouped_args(vars(parser.parse_args()), {}, 'remove', 'restore', 'trash')
+    args = vars(parser.parse_args())
+
+    if args.get('config_json') != None:
+        print "t"
+        config_args = load_json_config(args.get('config_json'))
+    elif args.get('config_toml') != None:
+        print "j"
+        config_args = load_toml_config(args.get('config_toml'))
+
+    return grouped_args(args, config_args, 'remove', 'restore', 'trash')
 
 def print_trash_list(trasher):
     meta = trasher.list_trash()
