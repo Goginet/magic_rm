@@ -45,17 +45,19 @@ def parse_args():
     subparser.add_parser('trash-list')
 
     remove_parser.add_argument('-f', '--force', action='store_true', dest='remove.force',
+                               default=argparse.SUPPRESS,
                                help='ignore nonexistent files and arguments, never prompt')
     remove_parser.add_argument('-i', action='store_true', dest='remove.interactive',
-                               help='prompt before every removal')
+                               default=argparse.SUPPRESS, help='prompt before every removal')
     remove_parser.add_argument('-r', '-R', action='store_true', dest='remove.recursive',
+                               default=argparse.SUPPRESS,
                                help='remove directories and their contents recursively')
     remove_parser.add_argument('-d', '--dir', action='store_true', dest='remove.empty_dir',
-                               help='remove empty directories')
+                               default=argparse.SUPPRESS, help='remove empty directories')
     remove_parser.add_argument('--no-trash', action='store_true', dest='trash.no_trash',
-                               help='Don\'t save files in trash')
+                               default=argparse.SUPPRESS, help='Don\'t save files in trash')
     remove_parser.add_argument('--no-remove', action='store_true', dest='remove.no_remove',
-                               help='Don\'t remove files')
+                               default=argparse.SUPPRESS, help='Don\'t remove files')
     remove_parser.add_argument('--retention', action='store', dest='restore.retention',
                                type=isodate.parse_duration,
                                help=("File retention time in the trash\n"
@@ -64,10 +66,10 @@ def parse_args():
                                      "\tPT1H1M1S (1 hour, 1 minute, 1 sec))\n"))
 
     restore_parser.add_argument('-f', '--force', action='store_true', dest='restore.force',
-                                help='restore when item already exists')
+                                default=argparse.SUPPRESS, help='restore when item already exists')
 
     parser.add_argument('--trash_path', action='store', dest='trash.path',
-                        default="/home/goginet/trasher", help='Path to trash directory')
+                        default=argparse.SUPPRESS, help='Path to trash directory')
 
     config_group = parser.add_mutually_exclusive_group()
     config_group.add_argument('--config', action='store', dest='config_toml',
@@ -99,7 +101,8 @@ def main():
     args = parse_args()
 
     def create_trasher():
-        return MagicTrasher(trash_path=args['trash']['path'], **args['restore'])
+        args['trash'].update(args['restore'])
+        return MagicTrasher(**args['trash'])
 
     def create_deleter(trasher):
         return MagicDeleter(trasher=trasher, **args['remove'])
