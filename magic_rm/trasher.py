@@ -18,12 +18,12 @@ def meta_update(func):
                 with open(self.meta_file_path, 'rb') as f:
                     trash_items = pickle.load(f)
 
-            trash_items = func(self, *args, trash_items=trash_items)
+            rez = func(self, *args, trash_items=trash_items)
 
             with open(self.meta_file_path, 'wb') as f:
                 pickle.dump(trash_items, f)
 
-        return trash_items
+        return rez
 
     return wrapper
 
