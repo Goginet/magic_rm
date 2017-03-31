@@ -5,6 +5,7 @@
 import argparse
 import toml
 import json
+import isodate
 from magic_rm.deleter import MagicDeleter
 from magic_rm.trasher import MagicTrasher
 
@@ -38,8 +39,9 @@ def parse_args():
 
     subparser = parser.add_subparsers(dest='command', title='commands')
 
-    remove_parser = subparser.add_parser('remove')
+    remove_parser = subparser.add_parser('remove', formatter_class=argparse.RawTextHelpFormatter)
     restore_parser = subparser.add_parser('restore')
+    subparser.add_parser('flush')
     subparser.add_parser('trash-list')
 
     remove_parser.add_argument('-f', '--force', action='store_true', dest='remove.force',
@@ -54,6 +56,12 @@ def parse_args():
                                help='Don\'t save files in trash')
     remove_parser.add_argument('--no-remove', action='store_true', dest='remove.no_remove',
                                help='Don\'t remove files')
+    remove_parser.add_argument('--retention', action='store', dest='restore.retention',
+                               type=isodate.parse_duration,
+                               help=("File retention time in the trash\n"
+                                     "formats:\n"
+                                     "\tP1Y1M1D (1 year, 1 month, 1 day),\n"
+                                     "\tPT1H1M1S (1 hour, 1 minute, 1 sec))\n"))
 
     restore_parser.add_argument('-f', '--force', action='store_true', dest='restore.force',
                                 help='restore when item already exists')
@@ -73,10 +81,8 @@ def parse_args():
     args = vars(parser.parse_args())
 
     if args.get('config_json') != None:
-        print "t"
         config_args = load_json_config(args.get('config_json'))
     elif args.get('config_toml') != None:
-        print "j"
         config_args = load_toml_config(args.get('config_toml'))
 
     return grouped_args(args, config_args, 'remove', 'restore', 'trash')
@@ -110,6 +116,9 @@ def main():
         trasher = create_trasher()
         for path in args['PATH']:
             trasher.restore(path)
+    if args['command'] == 'flush':
+        trasher = create_trasher()
+        trasher.flush()
 
 if __name__ == '__main__':
     main()

@@ -29,15 +29,17 @@ def meta_update(func):
 
 class MagicTrasher(object):
 
-    def __init__(self, trash_path=None, force=False):
+    def __init__(self, trash_path=None, force=False, retention=None):
         self.trash_path = trash_path
         self.force = force
+        self.retention = retention
         self.meta_file_path = os.path.join(trash_path, "meta.db")
 
     @meta_update
     def meta_add(self, path_in_trash, path, trash_items=None):
         trash_items.update({os.path.basename(path_in_trash): {"real_path": path,
-                                                              "time": datetime.datetime.now()}})
+                                                              "time": datetime.datetime.now(),
+                                                              "retention": self.retention}})
 
     @meta_update
     def meta_remove(self, item, trash_items=None):
@@ -50,6 +52,23 @@ class MagicTrasher(object):
     @meta_update
     def meta_list(self, trash_items=None):
         return trash_items
+
+    def flush(self):
+        self.flush_by_retention_time()
+
+    def flush_by_retention_time(self):
+        items = self.meta_list()
+
+        for name, value in items.iteritems():
+            if value.get("retention") != None:
+                end_time = value.get("time") + value.get("retention")
+                if datetime.datetime.now() > end_time:
+                    path_in_trash = os.path.join(self.trash_path, name)
+                    if os.path.isdir(path_in_trash):
+                        shutil.rmtree(path_in_trash)
+                    else:
+                        os.remove(path_in_trash)
+                    self.meta_remove(name)
 
     def move_to_trash(self, path):
         if self.trash_path != None:
