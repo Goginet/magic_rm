@@ -13,7 +13,7 @@ def meta_update(func):
     def wrapper(self, *args):
         trash_items = {}
 
-        rez = {} # This is bad (
+        rez = {}
 
         if os.path.exists(self.path):
             if os.path.exists(self.meta_file_path):
@@ -38,108 +38,106 @@ class MagicTrasher(object):
         self.meta_file_path = os.path.join(path, "meta.db")
         self.logger = logger
 
-    @meta_update
-    def meta_add(self, path_in_trash, path, trash_items=None):
-        trash_items.update({os.path.basename(path_in_trash): {"real_path": path,
-                                                              "time": datetime.datetime.now(),
-                                                              "retention": self.retention}})
+    def move_to_trash(self, path):
+        if os.path.exists(path):
+            path = os.path.abspath(path)
 
-    @meta_update
-    def meta_remove(self, item, trash_items=None):
-        trash_items.pop(item)
+            path_in_trash = os.path.join(self.path, os.path.basename(path))
 
-    @meta_update
-    def meta_get(self, item, trash_items=None):
-        return trash_items.get(item)
+            self._move_to_trash(path, path_in_trash)
+        else:
+            self.__alert("Cannot move to trash '{}': No such file or directory".format(path),
+                         Logger.ERROR)
 
-    @meta_update
-    def meta_list(self, trash_items=None):
-        return trash_items
+    def restore(self, item_name):
+        item = self._meta_list().get(item_name)
+
+        if item is None:
+            self.__alert("Item: \'{}\' does not exists in trash.".format(item_name),
+                         Logger.ERROR)
+            return
+
+        if not os.path.exists(item["real_path"]) or self.force:
+            self._restore_item(item_name, item)
+        else:
+            self.__alert("Can't restore item, item already exists", Logger.ERROR)
 
     def flush(self):
         self.flush_by_retention_time()
 
     def flush_by_retention_time(self):
-        items = self.meta_list()
+        items = self._meta_list()
 
         for name, value in items.iteritems():
             if value.get("retention") != None:
                 end_time = value.get("time") + value.get("retention")
                 if datetime.datetime.now() > end_time:
-                    path_in_trash = os.path.join(self.path, name)
-                    if os.path.isdir(path_in_trash):
-                        shutil.rmtree(path_in_trash)
-                    else:
-                        os.remove(path_in_trash)
-                    self.meta_remove(name)
-
-    def move_to_trash(self, path):
-        if os.path.exists(path):
-            def inc_path(path, index):
-                new_path = path + "_({})".format(index)
-                if os.path.exists(new_path):
-                    return inc_path(path, index + 1)
-                else:
-                    return new_path
-
-            path = os.path.abspath(path)
-
-            path_in_trash = os.path.join(self.path, os.path.basename(path))
-
-            if not os.path.exists(self.path):
-                os.makedirs(self.path)
-
-            if os.path.exists(path_in_trash):
-                path_in_trash = inc_path(path_in_trash, 1)
-
-            if os.path.isdir(path):
-                shutil.copytree(path, path_in_trash, symlinks=True)
-            else:
-                shutil.copy(path, path_in_trash)
-
-            self.meta_add(path_in_trash, path)
-        else:
-            self.alert("Cannot remove '{}': No such file or directory".format(path),
-                       Logger.ERROR)
+                    self._remove_item(name)
 
     def list_trash(self):
-        return self.meta_list()
+        return self._meta_list()
 
-    def restore(self, item_name):
-        if self.path != None:
-            def restore(path_in_trash, real_path):
-                shutil.move(path_in_trash, real_path)
-                self.meta_remove(item_name)
-
-            item = self.meta_get(item_name)
-
-            if item is None:
-                self.alert("Item: \'{}\' does not exists in trash.".format(item_name),
-                           Logger.ERROR)
-                return
-
-            path_in_trash = os.path.join(self.path, item_name)
-
-            real_path = item.get("real_path")
-
-            dest = os.path.dirname(real_path)
-
-            if os.path.exists(real_path):
-                if self.force:
-                    if os.path.isdir(real_path):
-                        shutil.rmtree(real_path)
-                    else:
-                        os.remove(real_path)
-                    restore(path_in_trash, real_path)
-                else:
-                    self.logger.alert("Can't restore item, item already exists", Logger.ERROR)
+    def _move_to_trash(self, path, path_in_trash):
+        def inc_path(path, index):
+            new_path = path + "_({})".format(index)
+            if os.path.exists(new_path):
+                return inc_path(path, index + 1)
             else:
-                if not os.path.exists(dest):
-                    os.makedirs(dest)
-                restore(path_in_trash, real_path)
-        else:
-            self.alert("Trash path not set", Logger.ERROR)
+                return new_path
 
-    def alert(self, message, message_type):
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
+
+        if os.path.exists(path_in_trash):
+            path_in_trash = inc_path(path_in_trash, 1)
+
+        self.__copy_dir_or_file(path, path_in_trash)
+
+        self._meta_add(path_in_trash, path)
+
+
+    def _restore_item(self, item_name, item):
+        self.__remove_dir_or_file(item.get("real_path"))
+
+        dest = os.path.dirname(item.get("real_path"))
+        os.makedirs(dest)
+
+        path_in_trash = os.path.join(self.path, item_name)
+        self.__copy_dir_or_file(path_in_trash, item.get("real_path"))
+        self._remove_item(item_name)
+
+    def _remove_item(self, name):
+        path_in_trash = os.path.join(self.path, name)
+        self.__remove_dir_or_file(path_in_trash)
+        self._meta_remove(name)
+
+    @meta_update
+    def _meta_add(self, path_in_trash, path, trash_items=None):
+        trash_items.update({os.path.basename(path_in_trash): {"real_path": path,
+                                                              "time": datetime.datetime.now(),
+                                                              "retention": self.retention}})
+
+    @meta_update
+    def _meta_remove(self, item, trash_items=None):
+        trash_items.pop(item)
+
+    @meta_update
+    def _meta_list(self, trash_items=None):
+        return trash_items
+
+    def __remove_dir_or_file(self, path):
+        if os.path.exists(path):
+            if os.path.isdir(path):
+                shutil.rmtree(path)
+            else:
+                os.remove(path)
+
+    def __copy_dir_or_file(self, src, dest):
+        if os.path.isdir(src):
+            shutil.copytree(src, dest, symlinks=True)
+        else:
+            shutil.copy(src, dest)
+
+    def __alert(self, message, message_type):
         if self.logger != None:
             self.logger.alert(message, message_type)
