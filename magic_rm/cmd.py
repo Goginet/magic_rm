@@ -89,11 +89,11 @@ def parse_args():
 
 def print_trash_list(trasher):
     meta = trasher.list_trash()
-    template = "|{:^30}|{:^30}|"
-    print template.format('item', 'time')
-    print "|{:-^30}|{:-^30}|".format('', '')
+    template = "|{:^30}|{:^30}|{:^30}|"
+    print template.format('item', 'time', "retention")
+    print "|{:-^30}|{:-^30}|{:-^30}|".format('', '', '')
     for name, el in meta.iteritems():
-        print template.format(name, el['time'].strftime("%y-%m-%d %H:%M:%S"))
+        print template.format(name, el['time'].strftime("%y-%m-%d %H:%M:%S"), el['retention'])
 
 def main():
     args = parse_args()
