@@ -29,13 +29,13 @@ class MagicDeleter(object):
         self.logger = logger
 
     def remove(self, path):
-        if self.trasher != None:
-            self.trasher.move_to_trash(path)
-
         if not os.path.exists(path):
             self.alert("Cannot remove '{}': No such file or directory".format(path),
                        Logger.ERROR)
         else:
+            if self.trasher != None:
+                self.trasher.move_to_trash(path)
+
             self._remove(path)
 
     def remove_dir(self, path):

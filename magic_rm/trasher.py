@@ -74,29 +74,33 @@ class MagicTrasher(object):
                     self.meta_remove(name)
 
     def move_to_trash(self, path):
-        def inc_path(path, index):
-            new_path = path + "_({})".format(index)
-            if os.path.exists(new_path):
-                return inc_path(path, index + 1)
+        if os.path.exists(path):
+            def inc_path(path, index):
+                new_path = path + "_({})".format(index)
+                if os.path.exists(new_path):
+                    return inc_path(path, index + 1)
+                else:
+                    return new_path
+
+            path = os.path.abspath(path)
+
+            path_in_trash = os.path.join(self.path, os.path.basename(path))
+
+            if not os.path.exists(self.path):
+                os.makedirs(self.path)
+
+            if os.path.exists(path_in_trash):
+                path_in_trash = inc_path(path_in_trash, 1)
+
+            if os.path.isdir(path):
+                shutil.copytree(path, path_in_trash, symlinks=True)
             else:
-                return new_path
+                shutil.copy(path, path_in_trash)
 
-        path = os.path.abspath(path)
-
-        path_in_trash = os.path.join(self.path, os.path.basename(path))
-
-        if not os.path.exists(self.path):
-            os.makedirs(self.path)
-
-        if os.path.exists(path_in_trash):
-            path_in_trash = inc_path(path_in_trash, 1)
-
-        if os.path.isdir(path):
-            shutil.copytree(path, path_in_trash, symlinks=True)
+            self.meta_add(path_in_trash, path)
         else:
-            shutil.copy(path, path_in_trash)
-
-        self.meta_add(path_in_trash, path)
+            self.alert("Cannot remove '{}': No such file or directory".format(path),
+                       Logger.ERROR)
 
     def list_trash(self):
         return self.meta_list()
