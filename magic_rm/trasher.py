@@ -7,6 +7,7 @@ import os
 import shutil
 import pickle
 import datetime
+from magic_rm.logger import Logger
 
 def meta_update(func):
     def wrapper(self, *args):
@@ -30,11 +31,12 @@ def meta_update(func):
 
 class MagicTrasher(object):
 
-    def __init__(self, path="magic_trash", force=False, retention=None):
+    def __init__(self, logger=None, path="magic_trash", force=False, retention=None):
         self.path = path
         self.force = force
         self.retention = retention
         self.meta_file_path = os.path.join(path, "meta.db")
+        self.logger = logger
 
     @meta_update
     def meta_add(self, path_in_trash, path, trash_items=None):
@@ -108,7 +110,8 @@ class MagicTrasher(object):
             item = self.meta_get(item_name)
 
             if item is None:
-                self.alert("Item: \'{}\' does not exists in trash.".format(item_name))
+                self.alert("Item: \'{}\' does not exists in trash.".format(item_name),
+                           Logger.ERROR)
                 return
 
             path_in_trash = os.path.join(self.path, item_name)
@@ -125,13 +128,14 @@ class MagicTrasher(object):
                         os.remove(real_path)
                     restore(path_in_trash, real_path)
                 else:
-                    self.alert("File exists")
+                    self.logger.alert("Can't restore item, item already exists", Logger.ERROR)
             else:
                 if not os.path.exists(dest):
                     os.makedirs(dest)
                 restore(path_in_trash, real_path)
         else:
-            self.alert("Trash path not set")
+            self.alert("Trash path not set", Logger.ERROR)
 
-    def alert(self, message):
-        print message
+    def alert(self, message, message_type):
+        if self.logger != None:
+            self.logger.alert(message, message_type)

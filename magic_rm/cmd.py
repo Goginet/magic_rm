@@ -8,6 +8,7 @@ import json
 import isodate
 from magic_rm.deleter import MagicDeleter
 from magic_rm.trasher import MagicTrasher
+from magic_rm.logger import Logger
 
 def grouped_args(args, new_args, *groups):
     for group in groups:
@@ -70,6 +71,14 @@ def parse_args():
 
     parser.add_argument('--trash_path', action='store', dest='trash.path',
                         default=argparse.SUPPRESS, help='Path to trash directory')
+    parser.add_argument('--log-level', choices=Logger.LEVELS, dest='logger.log_level',
+                        default=argparse.SUPPRESS, help='Level for logging to file')
+    parser.add_argument('--verbose-level', choices=Logger.LEVELS, dest='logger.verbose_level',
+                        default=argparse.SUPPRESS, help='Level for logging to stdout')
+    parser.add_argument('--log-mode', choices=Logger.FORMATS, dest='logger.mode',
+                        default=argparse.SUPPRESS, help='Formatter mode for log messages')
+    parser.add_argument('--log-path', action='store', dest='logger.file_path',
+                        default=argparse.SUPPRESS, help='Path to config file')
 
     config_group = parser.add_mutually_exclusive_group()
     config_group.add_argument('--config', action='store', dest='config_toml',
@@ -87,7 +96,7 @@ def parse_args():
     elif args.get('config_toml') != None:
         config_args = load_toml_config(args.get('config_toml'))
 
-    return grouped_args(args, config_args, 'remove', 'restore', 'trash')
+    return grouped_args(args, config_args, 'remove', 'restore', 'trash', 'logger')
 
 def print_trash_list(trasher):
     meta = trasher.list_trash()
@@ -100,27 +109,31 @@ def print_trash_list(trasher):
 def main():
     args = parse_args()
 
-    def create_trasher():
+    def create_trasher(logger):
         args['trash'].update(args['restore'])
-        return MagicTrasher(**args['trash'])
+        return MagicTrasher(logger=logger, **args['trash'])
 
-    def create_deleter(trasher):
-        return MagicDeleter(trasher=trasher, **args['remove'])
+    def create_deleter(trasher, logger):
+        return MagicDeleter(trasher=trasher, logger=logger, **args['remove'])
 
+    def create_logger():
+        return Logger(**args['logger'])
+
+    logger = create_logger()
     if args['command'] == 'remove':
-        trasher = create_trasher()
-        deleter = create_deleter(trasher)
+        trasher = create_trasher(logger)
+        deleter = create_deleter(trasher, logger)
         for path in args['PATH']:
             deleter.remove(path)
     if args['command'] == 'trash-list':
-        trasher = create_trasher()
+        trasher = create_trasher(logger)
         print_trash_list(trasher)
     if args['command'] == 'restore':
-        trasher = create_trasher()
+        trasher = create_trasher(logger)
         for path in args['PATH']:
             trasher.restore(path)
     if args['command'] == 'flush':
-        trasher = create_trasher()
+        trasher = create_trasher(logger)
         trasher.flush()
 
 if __name__ == '__main__':
