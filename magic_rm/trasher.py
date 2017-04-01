@@ -136,10 +136,13 @@ class MagicTrasher(object):
                 os.remove(path)
 
     def __copy_dir_or_file(self, src, dest):
-        if os.path.isdir(src):
-            shutil.copytree(src, dest, symlinks=True)
+        if os.path.exists(src):
+            if os.path.isdir(src):
+                shutil.copytree(src, dest, symlinks=True)
+            else:
+                shutil.copy(src, dest)
         else:
-            shutil.copy(src, dest)
+            self.logger.alert("Can't found '{}' item in trash. It's lost.", Logger.ERROR)
 
     def __alert(self, message, message_type):
         if self.logger != None:
