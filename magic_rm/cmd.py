@@ -4,6 +4,7 @@
 # Author Georgy Schapchits <gogi.soft.gm@gmail.com>.
 import argparse
 import toml
+import os
 import json
 import isodate
 from magic_rm.deleter import MagicDeleter
@@ -26,14 +27,28 @@ def grouped_args(args, new_args, *groups):
     return new_args
 
 def load_toml_config(path):
+    config_args = {}
+
+    if not os.path.exists(path):
+        with open(path, "w") as config_file:
+            config_file.write(simple_config_toml())
+
     with open(path) as config_file:
         config_args = toml.load(config_file)
-        return config_args
+
+    return config_args
 
 def load_json_config(path):
+    config_args = {}
+
+    if not os.path.exists(path):
+        with open(path, "w") as config_file:
+            config_file.write(simple_config_json())
+
     with open(path) as config_file:
         config_args = json.load(config_file)
-        return config_args
+
+    return config_args
 
 def parse_args():
     parser = argparse.ArgumentParser(description='****Magic remove tool****')
@@ -44,6 +59,7 @@ def parse_args():
     restore_parser = subparser.add_parser('restore')
     subparser.add_parser('flush')
     subparser.add_parser('trash-list')
+    print_config_parser = subparser.add_parser('simple-config')
 
     remove_parser.add_argument('-f', '--force', action='store_true', dest='remove.force',
                                default=argparse.SUPPRESS,
@@ -79,6 +95,13 @@ def parse_args():
                         default=argparse.SUPPRESS, help='Formatter mode for log messages')
     parser.add_argument('--log-path', action='store', dest='logger.file_path',
                         default=argparse.SUPPRESS, help='Path to config file')
+
+
+    print_config_group = parser.add_mutually_exclusive_group()
+    print_config_group.add_argument('--toml', action='store_true', dest='toml',
+                                    default="magic_rm.conf", help='Print toml config')
+    print_config_group.add_argument('--json', action='store_true', dest='json',
+                                    default="magic_rm.conf", help='Print json config')
 
     config_group = parser.add_mutually_exclusive_group()
     config_group.add_argument('--config', action='store', dest='config_toml',
@@ -135,6 +158,65 @@ def main():
     if args['command'] == 'flush':
         trasher = create_trasher(logger)
         trasher.flush()
+    if args['command'] == 'simple-config':
+        if args['json']:
+            print simple_config_json()
+        else:
+            print simple_config_toml()
 
 if __name__ == '__main__':
     main()
+
+def simple_config_toml():
+    return '''
+[remove]
+    # force = true
+    # interactive = true
+    # recursive = true
+    # empty_dir = true
+    # no_remove = true
+
+    ### File retention time in the trash
+    ### formats: P1Y1M1D (1 year, 1 month, 1 day), PT1H1M1S (1 hour, 1 minute, 1 sec)
+    # retention = P1D
+
+[restore]
+    # force = true
+
+[logger]
+    log_level = "ERROR"
+    verbose_level = "WARNING"
+    mode = "JSON"
+    file_path = "magic_rm.log"
+
+[trash]
+    # no_trash = true
+    path = "trash"
+'''
+
+def simple_config_json():
+    return '''
+{
+    "remove": {
+        // "force": true,
+        // "interactive": true,
+        // "recursive": true,
+        // "empty_dir": true,
+        // "no_remove": true,
+        // "retention": "P1D"
+    },
+    "restore": {
+        // "force": true
+    },
+    "logger": {
+        "log_level": "ERROR",
+        "verbose_level": "WARNING",
+        "mode": "JSON",
+        "file_path": "magic_rm.log"
+    },
+    "trash": {
+        // "no_trash": true,
+        "path": "trash",
+    }
+}
+'''
