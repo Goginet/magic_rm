@@ -164,9 +164,6 @@ def main():
         else:
             print simple_config_toml()
 
-if __name__ == '__main__':
-    main()
-
 def simple_config_toml():
     return '''
 [remove]
@@ -220,3 +217,6 @@ def simple_config_json():
     }
 }
 '''
+
+if __name__ == '__main__':
+    main()
