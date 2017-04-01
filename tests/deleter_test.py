@@ -31,17 +31,17 @@ class TestRemove(unittest.TestCase):
 
     BASE_DIR = "/long/long/path"
     EMPTY_DIR = BASE_DIR + "/empty"
-    FILL_DIR = BASE_DIR + "/fill"
-    FILES_LIST = ["a", "b", "c"]
 
     def setUp(self):
         self.mfs = mockfs.replace_builtins()
 
-        entries = {}
-        for f in self.FILES_LIST:
-            entries.update(dict([(os.path.join(self.FILL_DIR, f), 'file')]))
+        self.mfs.add_entries({
+            self.BASE_DIR: 'magic',
+            self.BASE_DIR + "/dir1/a": 'magic',
+            self.BASE_DIR + "/dir1/b": 'magic',
+            self.BASE_DIR + "/dir1/dir2/a": 'magic2',
+            self.BASE_DIR + "/dir3/e": 'magic'})
 
-        self.mfs.add_entries(entries)
         self.mfs.makedirs(self.EMPTY_DIR)
 
     def tearDown(self):
@@ -49,27 +49,15 @@ class TestRemove(unittest.TestCase):
 
     @access_patch
     def test_rmdir_empty(self):
-        deleter = MagicDeleter(empty_dir=True, recursive=False, interactive=False, force=False)
+        deleter = MagicDeleter(empty_dir=True)
         deleter.remove(self.EMPTY_DIR)
         self.assertEqual(os.path.exists(self.EMPTY_DIR), False)
 
     @access_patch
     def test_rmdir_recursive_base(self):
-        deleter = MagicDeleter(empty_dir=False, recursive=True, interactive=False, force=False)
+        deleter = MagicDeleter(recursive=True)
         deleter.remove(self.BASE_DIR)
         self.assertEqual(os.path.exists(self.BASE_DIR), False)
-
-    @access_patch
-    @assert_alert("Cannot remove '{}': Directory not empty".format(BASE_DIR))
-    def test_rmdir_not_empty_check_err(self):
-        deleter = MagicDeleter(empty_dir=True, recursive=False, interactive=False, force=False)
-        deleter.remove(self.BASE_DIR)
-
-    @access_patch
-    @assert_alert("Cannot remove '{}': Is a directory".format(BASE_DIR))
-    def test_rmdir_not_dir_check_err(self):
-        deleter = MagicDeleter(empty_dir=False, recursive=False, interactive=False, force=False)
-        deleter.remove(self.BASE_DIR)
 
 if __name__ == '__main__':
     unittest.main()
