@@ -40,6 +40,8 @@ class MagicTrasher(object):
 
     def move_to_trash(self, path):
         if os.path.exists(path):
+            self.flush()
+
             path = os.path.abspath(path)
 
             path_in_trash = os.path.join(self.path, os.path.basename(path))
@@ -100,7 +102,8 @@ class MagicTrasher(object):
         self.__remove_dir_or_file(item.get("real_path"))
 
         dest = os.path.dirname(item.get("real_path"))
-        os.makedirs(dest)
+        if not os.path.exists(dest):
+            os.makedirs(dest)
 
         path_in_trash = os.path.join(self.path, item_name)
         self.__copy_dir_or_file(path_in_trash, item.get("real_path"))
