@@ -5,8 +5,10 @@
 
 import os
 import sys
-from magic_rm.logger import Logger
+
 from magic_rm.errors import *
+from magic_rm.logger import Logger
+
 
 class MagicDeleter(object):
 

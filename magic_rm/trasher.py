@@ -3,12 +3,14 @@
 #
 # Author Georgy Schapchits <gogi.soft.gm@gmail.com>.
 
-import os
-import shutil
-import pickle
 import datetime
-from magic_rm.logger import Logger
+import os
+import pickle
+import shutil
+
 from magic_rm.errors import *
+from magic_rm.logger import Logger
+
 
 def meta_update(func):
     def wrapper(self, *args):
