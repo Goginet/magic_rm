@@ -7,9 +7,6 @@ import os
 import sys
 from magic_rm.logger import Logger
 
-class NotRemovedException(Exception):
-    pass
-
 class MagicDeleter(object):
 
     def __init__(self,
@@ -75,19 +72,14 @@ class MagicDeleter(object):
             self.remove_file(path)
 
     def _remove_content(self, path):
-        success = True
         for el in os.listdir(path):
             try:
                 self._remove(os.path.join(path, el))
             except OSError as err:
                 self.alert(err.strerror, Logger.ERROR)
-                success = False
-            except NotRemovedException:
-                success = False
-        if success:
+
+        if os.listdir(path) == 0:
             self._remove_empty_dir(path)
-        else:
-            raise NotRemovedException()
 
     def _remove_empty_dir(self, path):
         try:
