@@ -39,18 +39,15 @@ class TestTrash(unittest.TestCase):
     TRASH_PATH = "/home/trash"
 
     BASE_DIR = "/long/long/path"
-    EMPTY_DIR = BASE_DIR + "/empty"
 
     def setUp(self):
         self.mfs = mockfs.replace_builtins()
 
         self.mfs.add_entries({
-            self.BASE_DIR + "/dir1/a": 'magic',
-            self.BASE_DIR + "/dir1/b": 'magic',
-            self.BASE_DIR + "/dir1/dir2/a": 'magic2',
-            self.BASE_DIR + "/dir3/e": 'magic'})
-
-        self.mfs.makedirs(self.EMPTY_DIR)
+            os.path.join(self.BASE_DIR, "dir1", "a"): 'magic',
+            os.path.join(self.BASE_DIR, "dir1", "b"): 'magic',
+            os.path.join(self.BASE_DIR, "dir1", "dir2", "a"): 'magic2',
+            os.path.join(self.BASE_DIR, "dir3", "e"): 'magic'})
 
     def tearDown(self):
         mockfs.restore_builtins()

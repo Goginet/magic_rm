@@ -37,12 +37,10 @@ class TestRemove(unittest.TestCase):
 
         self.mfs.add_entries({
             self.BASE_DIR: 'magic',
-            self.BASE_DIR + "/dir1/a": 'magic',
-            self.BASE_DIR + "/dir1/b": 'magic',
-            self.BASE_DIR + "/dir1/dir2/a": 'magic2',
-            self.BASE_DIR + "/dir3/e": 'magic'})
-
-        self.mfs.makedirs(self.EMPTY_DIR)
+            os.path.join(self.BASE_DIR, "dir1", "a"): 'magic',
+            os.path.join(self.BASE_DIR, "dir1", "b"): 'magic',
+            os.path.join(self.BASE_DIR, "dir1", "dir2", "a"): 'magic2',
+            os.path.join(self.BASE_DIR, "dir3", "e"): 'magic'})
 
     def tearDown(self):
         mockfs.restore_builtins()
