@@ -81,7 +81,7 @@ class MagicTrasher(object):
 
     def _move_to_trash(self, path, path_in_trash):
         def inc_path(path, index):
-            new_path = path + "_({})".format(index)
+            new_path = "{}_({})".format(path, index)
             if os.path.exists(new_path):
                 return inc_path(path, index + 1)
             else:
@@ -116,9 +116,15 @@ class MagicTrasher(object):
 
     @meta_update
     def _meta_add(self, path_in_trash, path, trash_items=None):
-        trash_items.update({os.path.basename(path_in_trash): {"real_path": path,
-                                                              "time": datetime.datetime.now(),
-                                                              "retention": self.retention}})
+        trash_items.update(
+            {
+                os.path.basename(path_in_trash): {
+                    "real_path": path,
+                    "time": datetime.datetime.now(),
+                    "retention": self.retention
+                }
+            }
+        )
 
     @meta_update
     def _meta_remove(self, item, trash_items=None):
