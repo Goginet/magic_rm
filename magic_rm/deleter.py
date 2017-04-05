@@ -6,6 +6,7 @@
 import os
 import sys
 from magic_rm.logger import Logger
+from magic_rm.errors import *
 
 class MagicDeleter(object):
 
@@ -28,7 +29,7 @@ class MagicDeleter(object):
     def remove(self, path):
         if not os.path.exists(path):
             self.alert("Cannot remove '{}': No such file or directory".format(path),
-                       Logger.ERROR)
+                       Logger.ERROR, DeleterNotFoundError)
         else:
             if self.trasher != None:
                 self.trasher.move_to_trash(path)
@@ -44,9 +45,10 @@ class MagicDeleter(object):
                     self._remove_content(path)
                 else:
                     self.alert("Cannot remove '{}': Directory not empty".format(path),
-                               Logger.ERROR)
+                               Logger.ERROR, DeleterNotEmptyError)
             else:
-                self.alert("Cannot remove '{}': Is a directory".format(path), Logger.ERROR)
+                self.alert("Cannot remove '{}': Is a directory".format(path),
+                           Logger.ERROR, DeleterNotFileError)
 
         if os.access(path, os.W_OK):
             if self.ask("descend into directory '{}'?".format(path)):
@@ -76,7 +78,7 @@ class MagicDeleter(object):
             try:
                 self._remove(os.path.join(path, el))
             except OSError as err:
-                self.alert(err.strerror, Logger.ERROR)
+                self.alert(err.strerror, Logger.ERROR, DeleterRemoveError)
 
         if os.listdir(path) == 0:
             self._remove_empty_dir(path)
@@ -103,9 +105,13 @@ class MagicDeleter(object):
         self.alert("remove {} file".format(path), Logger.DEBUG)
         os.remove(path)
 
-    def alert(self, message, message_type):
+    def alert(self, message, message_type, error_type=None):
         if self.logger != None:
             self.logger.alert(message, message_type)
+
+        if message_type == Logger.ERROR and error_type != None:
+            if not self.force:
+                raise error_type(message)
 
     def ask(self, question, default="yes", warning=False):
         if not self.force and (self.interactive or warning):

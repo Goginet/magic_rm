@@ -8,6 +8,7 @@ import shutil
 import pickle
 import datetime
 from magic_rm.logger import Logger
+from magic_rm.errors import *
 
 def meta_update(func):
     def wrapper(self, *args):
@@ -49,20 +50,21 @@ class MagicTrasher(object):
             self._move_to_trash(path, path_in_trash)
         else:
             self.__alert("Cannot move to trash '{}': No such file or directory".format(path),
-                         Logger.ERROR)
+                         Logger.ERROR, TrasherNotFoundError)
 
     def restore(self, item_name):
         item = self._meta_list().get(item_name)
 
         if item is None:
             self.__alert("Item: \'{}\' does not exists in trash.".format(item_name),
-                         Logger.ERROR)
+                         Logger.ERROR, TrasherNotExistsError)
             return
 
         if not os.path.exists(item["real_path"]) or self.force:
             self._restore_item(item_name, item)
         else:
-            self.__alert("Can't restore item, item already exists", Logger.ERROR)
+            self.__alert("Can't restore item, item already exists",
+                         Logger.ERROR, TrasherRestoreConflict)
 
     def flush(self):
         self.flush_by_retention_time()
@@ -148,8 +150,13 @@ class MagicTrasher(object):
             else:
                 shutil.copy(src, dest)
         else:
-            self.logger.alert("Can't found '{}' item in trash. It's lost.", Logger.ERROR)
+            self.logger.alert("Can't found '{}' item in trash. It's lost.",
+                              Logger.ERROR, TrasherNotIndexedError)
 
-    def __alert(self, message, message_type):
+    def __alert(self, message, message_type, error_type=None):
         if self.logger != None:
             self.logger.alert(message, message_type)
+
+        if message_type == Logger.ERROR and error_type != None:
+            if not self.force:
+                raise error_type(message)

@@ -10,6 +10,7 @@ import isodate
 from magic_rm.deleter import MagicDeleter
 from magic_rm.trasher import MagicTrasher
 from magic_rm.logger import Logger
+from magic_rm.errors import Error
 
 def grouped_args(args, new_args, *groups):
     for group in groups:
@@ -142,27 +143,33 @@ def main():
     def create_logger():
         return Logger(**args['logger'])
 
-    logger = create_logger()
-    if args['command'] == 'remove':
-        trasher = create_trasher(logger)
-        deleter = create_deleter(trasher, logger)
-        for path in args['PATH']:
-            deleter.remove(path)
-    if args['command'] == 'trash-list':
-        trasher = create_trasher(logger)
-        print_trash_list(trasher)
-    if args['command'] == 'restore':
-        trasher = create_trasher(logger)
-        for path in args['PATH']:
-            trasher.restore(path)
-    if args['command'] == 'flush':
-        trasher = create_trasher(logger)
-        trasher.flush()
-    if args['command'] == 'simple-config':
-        if args['json']:
-            print simple_config_json()
-        else:
-            print simple_config_toml()
+    def run():
+        logger = create_logger()
+        if args['command'] == 'remove':
+            trasher = create_trasher(logger)
+            deleter = create_deleter(trasher, logger)
+            for path in args['PATH']:
+                deleter.remove(path)
+        if args['command'] == 'trash-list':
+            trasher = create_trasher(logger)
+            print_trash_list(trasher)
+        if args['command'] == 'restore':
+            trasher = create_trasher(logger)
+            for path in args['PATH']:
+                trasher.restore(path)
+        if args['command'] == 'flush':
+            trasher = create_trasher(logger)
+            trasher.flush()
+        if args['command'] == 'simple-config':
+            if args['json']:
+                print simple_config_json()
+            else:
+                print simple_config_toml()
+
+    try:
+        run()
+    except Error as err:
+        exit(err.code)
 
 def simple_config_toml():
     return '''
