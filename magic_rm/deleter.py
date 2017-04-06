@@ -3,6 +3,7 @@
 #
 # Author Georgy Schapchits <gogi.soft.gm@gmail.com>.
 
+import stat
 import os
 import sys
 
@@ -19,6 +20,7 @@ class MagicDeleter(object):
                  empty_dir=False,
                  trasher=None,
                  no_remove=False,
+                 symlinks=False,
                  logger=None):
         self.force = force
         self.interactive = interactive
@@ -27,6 +29,8 @@ class MagicDeleter(object):
         self.is_remove = not no_remove
         self.trasher = trasher
         self.logger = logger
+        self.symlinks = symlinks
+        self.__used_symlinks = []
 
     def remove(self, path):
         if not os.path.exists(path):
@@ -69,11 +73,28 @@ class MagicDeleter(object):
         elif self.ask("remove write-protected regular file'{}'?".format(path), warning=True):
             remove()
 
-    def _remove(self, path):
+    def _remove_not_link(self, path):
         if os.path.isdir(path):
             self.remove_dir(path)
         elif os.path.isfile(path):
             self.remove_file(path)
+
+    def _go_to_link(self, path):
+        inode = os.stat(path).st_ino
+        realpath = os.readlink(path)
+
+        if inode not in self.__used_symlinks:
+            self.__used_symlinks.append(inode)
+            self._remove_not_link(realpath)
+
+    def _remove(self, path):
+        if os.path.islink(path):
+            if self.symlinks:
+                self._go_to_link(path)
+
+            self.__unlink(path)
+        else:
+            self._remove_not_link(path)
 
     def _remove_content(self, path):
         for el in os.listdir(path):
@@ -98,6 +119,10 @@ class MagicDeleter(object):
                 rmdir()
         except OSError as err:
             self.alert(err.strerror, Logger.ERROR)
+
+    def __unlink(self, path):
+        self.alert("remove '{}' symlink".format(path), Logger.DEBUG)
+        os.unlink(path)
 
     def __rmdir(self, path):
         self.alert("remove '{}' directory".format(path), Logger.DEBUG)

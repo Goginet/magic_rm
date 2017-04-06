@@ -20,6 +20,9 @@ def parse_args():
     subparser.add_parser('trash-list')
     print_config_parser = subparser.add_parser('simple-config')
 
+    remove_parser.add_argument('-s', '--symlinks', action='store_true', dest='remove.symlinks',
+                               default=argparse.SUPPRESS,
+                               help='Follow the symlinks')
     remove_parser.add_argument('-f', '--force', action='store_true', dest='remove.force',
                                default=argparse.SUPPRESS,
                                help='ignore nonexistent files and arguments, never prompt')
@@ -54,7 +57,6 @@ def parse_args():
                         default=argparse.SUPPRESS, help='Formatter mode for log messages')
     parser.add_argument('--log-path', action='store', dest='logger.file_path',
                         default=argparse.SUPPRESS, help='Path to config file')
-
 
     print_config_group = parser.add_mutually_exclusive_group()
     print_config_group.add_argument('--toml', action='store_true', dest='toml',
