@@ -1,6 +1,10 @@
 *.vscode
-*/*.pyc
+**.pyc
 .gitignore
+td
+**.conf
+**.log
+trash
 env
 build
 dist
