@@ -37,9 +37,7 @@ class Logger(object):
         logger.setLevel(logging.DEBUG)
 
         if self.mode == Logger.JSON:
-            template = '''{"time": "%(asctime)",
-                        "type": "%(levelname)",
-                        "message": "%(message)"}'''
+            template = '{"time": "%(asctime)s","type": "%(levelname)s","message": "%(message)s"}'
             formatter = logging.Formatter(template)
         elif self.mode == Logger.HUMAN:
             template = '%(asctime)s - %(levelname)s - %(message)s'
