@@ -8,6 +8,7 @@ import os
 import pickle
 import shutil
 
+from magic_rm.fs import MagicFs
 from magic_rm.errors import *
 from magic_rm.logger import Logger
 
@@ -34,14 +35,32 @@ def meta_update(func):
 
 class MagicTrasher(object):
 
-    def __init__(self, logger=None, path="magic_trash", force=False, retention=None):
+    def __init__(self,
+                 interactive=False,
+                 recursive=True,
+                 empty_dir=True,
+                 symlinks=False,
+                 logger=None,
+                 path="magic_trash",
+                 force=False,
+                 retention=None):
+
         self.path = path
-        self.force = force
         self.retention = retention
         self.meta_file_path = os.path.join(path, "meta.db")
         self.logger = logger
+        self.force = force
 
-    def move_to_trash(self, path):
+        self.fs = MagicFs(
+            force=force,
+            interactive=interactive,
+            recursive=recursive,
+            empty_dir=empty_dir,
+            symlinks=symlinks,
+            logger=logger,
+        )
+
+    def remove(self, path):
         if os.path.exists(path):
             self.flush()
 
@@ -62,11 +81,7 @@ class MagicTrasher(object):
                          Logger.ERROR, TrasherNotExistsError)
             return
 
-        if not os.path.exists(item["real_path"]) or self.force:
-            self._restore_item(item_name, item)
-        else:
-            self.__alert("Can't restore item, item already exists",
-                         Logger.ERROR, TrasherRestoreConflict)
+        self._restore_item(item_name, item)
 
     def flush(self):
         self.flush_by_retention_time()
@@ -97,31 +112,26 @@ class MagicTrasher(object):
         if os.path.exists(path_in_trash):
             path_in_trash = inc_path(path_in_trash, 1)
 
-        self.__copy_dir_or_file(path, path_in_trash)
+        self.fs.move(path, path_in_trash)
 
         self._meta_add(path_in_trash, path)
 
 
     def _restore_item(self, item_name, item):
-        self.__remove_dir_or_file(item.get("real_path"))
-
-        dest = os.path.dirname(item.get("real_path"))
-        if not os.path.exists(dest):
-            os.makedirs(dest)
-
         path_in_trash = os.path.join(self.path, item_name)
+        real_path = item.get("real_path")
 
         if os.path.exists(path_in_trash):
-            self.__copy_dir_or_file(path_in_trash, item.get("real_path"))
+            self.fs.move(path_in_trash, real_path)
         else:
             self.logger.alert("Can't found '{}' item in trash. It's lost.",
                               Logger.ERROR, TrasherNotIndexedError)
 
-        self._remove_item(item_name)
+        self._meta_remove(item_name)
 
     def _remove_item(self, name):
         path_in_trash = os.path.join(self.path, name)
-        self.__remove_dir_or_file(path_in_trash)
+        self.fs.remove(path_in_trash)
         self._meta_remove(name)
 
     @meta_update
@@ -143,19 +153,6 @@ class MagicTrasher(object):
     @meta_update
     def _meta_list(self, trash_items=None):
         return trash_items
-
-    def __remove_dir_or_file(self, path):
-        if os.path.exists(path):
-            if os.path.isdir(path):
-                shutil.rmtree(path)
-            else:
-                os.remove(path)
-
-    def __copy_dir_or_file(self, src, dest):
-        if os.path.isdir(src):
-            shutil.copytree(src, dest, symlinks=True)
-        else:
-            shutil.copy(src, dest)
 
     def __alert(self, message, message_type, error_type=None):
         if self.logger != None:

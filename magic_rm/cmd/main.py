@@ -9,7 +9,6 @@ import toml
 
 from magic_rm.cmd.get_default_configs import *
 from magic_rm.cmd.parse_args import parse_args
-from magic_rm.deleter import MagicDeleter
 from magic_rm.errors import Error
 from magic_rm.logger import Logger
 from magic_rm.trasher import MagicTrasher
@@ -76,11 +75,7 @@ def main():
     args = get_args()
 
     def create_trasher(logger):
-        args['trash'].update(args['restore'])
-        return MagicTrasher(logger=logger, **args['trash'])
-
-    def create_deleter(trasher, logger):
-        return MagicDeleter(trasher=trasher, logger=logger, **args['remove'])
+        return MagicTrasher(logger=logger, **args['general'])
 
     def create_logger():
         return Logger(**args['logger'])
@@ -89,9 +84,8 @@ def main():
         logger = create_logger()
         if args['command'] == 'remove':
             trasher = create_trasher(logger)
-            deleter = create_deleter(trasher, logger)
             for path in args['PATH']:
-                deleter.remove(path)
+                trasher.remove(path)
         if args['command'] == 'trash-list':
             trasher = create_trasher(logger)
             print_trash_list(trasher)
