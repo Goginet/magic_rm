@@ -110,7 +110,13 @@ class MagicTrasher(object):
             os.makedirs(dest)
 
         path_in_trash = os.path.join(self.path, item_name)
-        self.__copy_dir_or_file(path_in_trash, item.get("real_path"))
+
+        if os.path.exists(path_in_trash):
+            self.__copy_dir_or_file(path_in_trash, item.get("real_path"))
+        else:
+            self.logger.alert("Can't found '{}' item in trash. It's lost.",
+                              Logger.ERROR, TrasherNotIndexedError)
+
         self._remove_item(item_name)
 
     def _remove_item(self, name):
@@ -146,14 +152,10 @@ class MagicTrasher(object):
                 os.remove(path)
 
     def __copy_dir_or_file(self, src, dest):
-        if os.path.exists(src):
-            if os.path.isdir(src):
-                shutil.copytree(src, dest, symlinks=True)
-            else:
-                shutil.copy(src, dest)
+        if os.path.isdir(src):
+            shutil.copytree(src, dest, symlinks=True)
         else:
-            self.logger.alert("Can't found '{}' item in trash. It's lost.",
-                              Logger.ERROR, TrasherNotIndexedError)
+            shutil.copy(src, dest)
 
     def __alert(self, message, message_type, error_type=None):
         if self.logger != None:
