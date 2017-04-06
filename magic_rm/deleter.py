@@ -103,7 +103,7 @@ class MagicDeleter(object):
             except OSError as err:
                 self.alert(err.strerror, Logger.ERROR, DeleterRemoveError)
 
-        if os.listdir(path) == 0:
+        if len(os.listdir(path)) == 0:
             self._remove_empty_dir(path)
 
     def _remove_empty_dir(self, path):
