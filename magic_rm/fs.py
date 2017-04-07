@@ -15,6 +15,11 @@ from magic_rm.walker import Logger
 from magic_rm.errors import *
 from magic_rm.walker import MagicWalker
 
+SKIP = "skip"
+MERGE = "merge"
+
+RESTORE_MODES = [SKIP, MERGE]
+
 
 class MagicFs(object):
 
@@ -24,8 +29,10 @@ class MagicFs(object):
                  recursive=False,
                  empty_dir=False,
                  symlinks=False,
+                 conflict=MERGE,
                  logger=None):
 
+        self.conflict = conflict
         self.force = force
         self.interactive = interactive
         self.recursive = recursive
@@ -59,6 +66,7 @@ class MagicFs(object):
         walker.walk(path)
 
     def copy(self, src, dst):
+
         def copy_link(path):
             if path == src:
                 self._copy_symlink(path, dst)
@@ -108,13 +116,21 @@ class MagicFs(object):
 
     def _copy_file(self, src, dst):
         self._build_dest(dst)
-        self.__alert("copy file \'{}\', to \'{}\'".format(src, dst), Logger.INFO)
-        shutil.copyfile(src, dst)
+
+        if os.path.exists(dst):
+            if self.conflict == MERGE and os.path.isfile(dst):
+                self.__alert("replace file \'{}\', to \'{}\'".format(dst, src), Logger.INFO)
+                shutil.copyfile(src, dst)
+        else:
+            self.__alert("copy file \'{}\', to \'{}\'".format(src, dst), Logger.INFO)
+            shutil.copyfile(src, dst)
 
     def _copy_dir(self, src, dst):
         self._build_dest(dst)
-        self.__alert("copy dir \'{}\', to \'{}\'".format(src, dst), Logger.INFO)
-        os.mkdir(dst)
+
+        if not os.path.exists(dst):
+            self.__alert("copy dir \'{}\', to \'{}\'".format(src, dst), Logger.INFO)
+            os.mkdir(dst)
 
     def _build_dest(self, path):
         dest = os.path.dirname(path)
