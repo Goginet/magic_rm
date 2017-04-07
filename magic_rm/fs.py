@@ -101,17 +101,25 @@ class MagicFs(object):
         walker.walk(src)
 
     def _copy_symlink(self, src, dst):
+        self._build_dest(dst)
         self.__alert("copy symlink \'{}\', to \'{}\'".format(src, dst), Logger.INFO)
         linkto = os.readlink(src)
         os.symlink(linkto, dst)
 
     def _copy_file(self, src, dst):
+        self._build_dest(dst)
         self.__alert("copy file \'{}\', to \'{}\'".format(src, dst), Logger.INFO)
         shutil.copyfile(src, dst)
 
     def _copy_dir(self, src, dst):
+        self._build_dest(dst)
         self.__alert("copy dir \'{}\', to \'{}\'".format(src, dst), Logger.INFO)
         os.mkdir(dst)
+
+    def _build_dest(self, path):
+        dest = os.path.dirname(path)
+        if not os.path.exists(dest):
+            os.makedirs(dest)
 
     def _remove_symlink(self, path):
         self.__alert("remove symlink \'{}\'".format(path), Logger.INFO)
