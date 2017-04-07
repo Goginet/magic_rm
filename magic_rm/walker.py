@@ -81,12 +81,6 @@ class MagicWalker(object):
 
         remove(path)
 
-        # if os.access(path, os.W_OK):
-        #     if self.__ask("descend into directory '{}'?".format(path)):
-        #         remove(path)
-        # elif self.__ask("descend into write-protected directory '{}'?".format(path), warning=True):
-        #     remove(path)
-
     def _call_content(self, path):
         for el in os.listdir(path):
             self._walk(os.path.join(path, el))

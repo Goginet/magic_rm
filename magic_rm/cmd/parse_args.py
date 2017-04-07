@@ -21,34 +21,11 @@ def parse_args():
     subparser.add_parser('trash-list')
     subparser.add_parser('simple-config')
 
-    remove_parser.add_argument('-l', '--symlinks', action='store_true', dest='general.symlinks',
-                               default=argparse.SUPPRESS, help='Follow the symlinks')
-    remove_parser.add_argument('-r', '--recursive', action='store_true', dest='general.recursive',
-                               default=argparse.SUPPRESS,
-                               help='remove directories and their contents recursively')
-    remove_parser.add_argument('-d', '--dir', action='store_true', dest='general.empty_dir',
-                               default=argparse.SUPPRESS, help='remove empty directories')
-    remove_parser.add_argument('--retention', action='store', dest='general.retention',
-                               type=isodate.parse_duration,
-                               help=("File retention time in the trash\n"
-                                     "formats:\n"
-                                     "\tP1Y1M1D (1 year, 1 month, 1 day),\n"
-                                     "\tPT1H1M1S (1 hour, 1 minute, 1 sec))\n"))
 
-    restore_mode_group = restore_parser.add_mutually_exclusive_group()
-    restore_parser.add_argument('-l', '--symlinks', action='store_true', dest='general.symlinks',
-                                default=argparse.SUPPRESS, help='Follow the symlinks')
-    restore_mode_group.add_argument('-m', '--merge', action='store_const',
-                                    dest='general.restore_mode', default=argparse.SUPPRESS,
-                                    const=magic_rm.fs.MERGE,
-                                    help='restore when item already exists')
-    restore_mode_group.add_argument('-s', '--skip', action='store_const',
-                                    dest='general.restore_mode', default=argparse.SUPPRESS,
-                                    const=magic_rm.fs.SKIP,
-                                    help='restore when item already exists')
+    remove_parser.add_argument('PATH', nargs='+', help='output version information and exit')
+    restore_parser.add_argument('PATH', nargs='+', help='output version information and exit')
 
-    parser.add_argument('--trash_path', action='store', dest='general.path',
-                        default=argparse.SUPPRESS, help='Path to trash directory')
+
     parser.add_argument('--log-level', choices=Logger.LEVELS, dest='logger.log_level',
                         default=argparse.SUPPRESS, help='Level for logging to file')
     parser.add_argument('--verbose-level', choices=Logger.LEVELS, dest='logger.verbose_level',
@@ -58,19 +35,47 @@ def parse_args():
     parser.add_argument('--log-path', action='store', dest='logger.file_path',
                         default=argparse.SUPPRESS, help='Path to config file')
 
+
     print_config_group = parser.add_mutually_exclusive_group()
     print_config_group.add_argument('--toml', action='store_true', dest='toml',
                                     default="magic_rm.conf", help='Print toml config')
     print_config_group.add_argument('--json', action='store_true', dest='json',
                                     default="magic_rm.conf", help='Print json config')
-
     config_group = parser.add_mutually_exclusive_group()
     config_group.add_argument('--config', action='store', dest='config_toml',
                               default="magic_rm.conf", help='Path to config file (TOML format)')
     config_group.add_argument('--config-json', action='store', dest='config_json',
                               help='Path to config file (JSON format)')
 
-    remove_parser.add_argument('PATH', nargs='+', help='output version information and exit')
-    restore_parser.add_argument('PATH', nargs='+', help='output version information and exit')
+    parser.add_argument('--trash_path', action='store', dest='trash.trash_path',
+                        default=argparse.SUPPRESS, help='Path to trash directory')
 
-    return vars(parser.parse_args()), ['general', 'logger']
+
+    remove_parser.add_argument('-l', '--symlinks', action='store_true',
+                               dest='remove.symlinks', default=argparse.SUPPRESS,
+                               help='Follow the symlinks')
+    remove_parser.add_argument('-r', '--recursive', action='store_true', dest='remove.recursive',
+                               default=argparse.SUPPRESS,
+                               help='remove directories and their contents recursively')
+    remove_parser.add_argument('-d', '--dir', action='store_true', dest='remove.dir',
+                               default=argparse.SUPPRESS, help='remove empty directories')
+    remove_parser.add_argument('--retention', action='store', dest='remove.retention',
+                               type=isodate.parse_duration,
+                               help=("File retention time in the trash\n"
+                                     "formats:\n"
+                                     "\tP1Y1M1D (1 year, 1 month, 1 day),\n"
+                                     "\tPT1H1M1S (1 hour, 1 minute, 1 sec))\n"))
+
+
+    restore_mode_group = restore_parser.add_mutually_exclusive_group()
+    restore_mode_group.add_argument('-r', '--replace', action='store_const',
+                                    dest='restore.conflict_resolve', default=argparse.SUPPRESS,
+                                    const=magic_rm.fs.REPLACE,
+                                    help='restore when item already exists')
+    restore_mode_group.add_argument('-s', '--skip', action='store_const',
+                                    dest='restore.conflict_resolve', default=argparse.SUPPRESS,
+                                    const=magic_rm.fs.SKIP,
+                                    help='restore when item already exists')
+
+
+    return vars(parser.parse_args()), ['remove', 'restore', 'trash', 'logger']

@@ -75,9 +75,15 @@ def main():
     args = get_args()
 
     def create_trasher(logger):
-        return MagicTrasher(logger=logger, **args['general'])
+        kwargs = {}
+        kwargs.update(args['trash'])
+        kwargs.update(args['remove'])
+        kwargs.update(args['restore'])
+        return MagicTrasher(logger=logger, **kwargs)
 
     def create_logger():
+        kwargs = {}
+        kwargs.update(args['logger'])
         return Logger(**args['logger'])
 
     def run():

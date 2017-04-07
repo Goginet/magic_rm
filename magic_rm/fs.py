@@ -15,10 +15,10 @@ from magic_rm.walker import Logger
 from magic_rm.errors import *
 from magic_rm.walker import MagicWalker
 
-SKIP = "skip"
-MERGE = "merge"
+SKIP = "SKIP"
+REPLACE = "REPLACE"
 
-RESTORE_MODES = [SKIP, MERGE]
+RESTORE_MODES = [SKIP, REPLACE]
 
 
 class MagicFs(object):
@@ -29,7 +29,7 @@ class MagicFs(object):
                  recursive=False,
                  empty_dir=False,
                  symlinks=False,
-                 conflict=MERGE,
+                 conflict=REPLACE,
                  logger=None):
 
         self.conflict = conflict

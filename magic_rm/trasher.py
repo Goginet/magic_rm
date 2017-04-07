@@ -8,7 +8,7 @@ import os
 import pickle
 import shutil
 
-from magic_rm.fs import MagicFs, MERGE
+from magic_rm.fs import MagicFs, SKIP
 from magic_rm.errors import *
 from magic_rm.logger import Logger
 
@@ -36,7 +36,7 @@ def meta_update(func):
 class MagicTrasher(object):
 
     def __init__(self,
-                 restore_mode=MERGE,
+                 conflict_resolve=SKIP,
                  recursive=True,
                  empty_dir=True,
                  symlinks=False,
@@ -45,7 +45,7 @@ class MagicTrasher(object):
                  force=False,
                  retention=None):
 
-        self.restore_mode = restore_mode
+        self.conflict_resolve = conflict_resolve
         self.path = path
         self.retention = retention
         self.meta_file_path = os.path.join(path, "meta.db")
@@ -53,7 +53,7 @@ class MagicTrasher(object):
         self.force = force
 
         self.fs = MagicFs(
-            conflict=restore_mode,
+            conflict=conflict_resolve,
             force=force,
             recursive=recursive,
             empty_dir=empty_dir,

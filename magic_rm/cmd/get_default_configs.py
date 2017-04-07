@@ -6,27 +6,38 @@
 def get_default_config_toml():
     return '''
 [remove]
-    # force = true
-    # interactive = true
+    ## Follow the symlinks
+    # symlinks = true
+
+    ## Recursive remove the dir
     # recursive = true
+
+    ## Remove empty dir
     # empty_dir = true
-    # no_remove = true
 
     ### File retention time in the trash
     ### formats: P1Y1M1D (1 year, 1 month, 1 day), PT1H1M1S (1 hour, 1 minute, 1 sec)
     # retention = P1D
 
 [restore]
-    # force = true
+    ## Police for resolve conflict (REPLACE|SKIP)
+    conflict_resolve="SKIP"
 
 [logger]
-    log_level = "ERROR"
-    verbose_level = "WARNING"
+    ## Logging level (DEBUG|INFO|WARNING|ERROR)
+    log_level = "DEBUG"
+
+    ## Verbose level (DEBUG|INFO|WARNING|ERROR)
+    verbose_level = "DEBUG"
+
+    ## Logger format (JSON|TOML)
     mode = "JSON"
+
+    ## Log file path
     file_path = "magic_rm.log"
 
 [trash]
-    # no_trash = true
+    ## Path to the trash dir
     path = "trash"
 '''
 
@@ -34,24 +45,21 @@ def get_default_config_json():
     return '''
 {
     "remove": {
-        // "force": true,
-        // "interactive": true,
-        // "recursive": true,
-        // "empty_dir": true,
-        // "no_remove": true,
-        // "retention": "P1D"
+        "symlinks": true,
+        "recursive": true,
+        "empty_dir": true,
+        "retention": "P1D"
     },
     "restore": {
-        // "force": true
+        "conflict_resolve": true
     },
     "logger": {
-        "log_level": "ERROR",
-        "verbose_level": "WARNING",
+        "log_level": "DEBUG",
+        "verbose_level": "DEBUG",
         "mode": "JSON",
         "file_path": "magic_rm.log"
     },
     "trash": {
-        // "no_trash": true,
         "path": "trash",
     }
 }
