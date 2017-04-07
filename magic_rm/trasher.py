@@ -43,10 +43,12 @@ class MagicTrasher(object):
                  logger=None,
                  path="magic_trash",
                  force=False,
+                 progress=False,
                  retention=None):
 
         self.conflict_resolve = conflict_resolve
         self.path = path
+        self.progress = progress
         self.retention = retention
         self.meta_file_path = os.path.join(path, "meta.db")
         self.logger = logger
@@ -55,6 +57,7 @@ class MagicTrasher(object):
         self.fs = MagicFs(
             conflict=conflict_resolve,
             force=force,
+            progress=progress,
             recursive=recursive,
             empty_dir=empty_dir,
             symlinks=symlinks,

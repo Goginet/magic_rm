@@ -34,6 +34,8 @@ def parse_args():
                         default=argparse.SUPPRESS, help='Formatter mode for log messages')
     parser.add_argument('--log-path', action='store', dest='logger.file_path',
                         default=argparse.SUPPRESS, help='Path to config file')
+    parser.add_argument('--dry-run', choices=Logger.LEVELS, dest='logger.log_level',
+                        default=argparse.SUPPRESS, help='Level for logging to file')
 
 
     print_config_group = parser.add_mutually_exclusive_group()
@@ -54,6 +56,9 @@ def parse_args():
     remove_parser.add_argument('-l', '--symlinks', action='store_true',
                                dest='remove.symlinks', default=argparse.SUPPRESS,
                                help='Follow the symlinks')
+    remove_parser.add_argument('--progress', action='store_true',
+                               dest='general.progress', default=argparse.SUPPRESS,
+                               help='Show progress for long operations')
     remove_parser.add_argument('-r', '--recursive', action='store_true', dest='remove.recursive',
                                default=argparse.SUPPRESS,
                                help='remove directories and their contents recursively')
@@ -67,6 +72,9 @@ def parse_args():
                                      "\tPT1H1M1S (1 hour, 1 minute, 1 sec))\n"))
 
 
+    restore_parser.add_argument('--progress', action='store_true',
+                                dest='general.progress', default=argparse.SUPPRESS,
+                                help='Show progress for long operations')
     restore_mode_group = restore_parser.add_mutually_exclusive_group()
     restore_mode_group.add_argument('-r', '--replace', action='store_const',
                                     dest='restore.conflict_resolve', default=argparse.SUPPRESS,
@@ -78,4 +86,4 @@ def parse_args():
                                     help='restore when item already exists')
 
 
-    return vars(parser.parse_args()), ['remove', 'restore', 'trash', 'logger']
+    return vars(parser.parse_args()), ['general', 'remove', 'restore', 'trash', 'logger']

@@ -10,10 +10,12 @@
 
 import os
 import shutil
+import sys
+import threading
+import time
 
-from magic_rm.walker import Logger
 from magic_rm.errors import *
-from magic_rm.walker import MagicWalker
+from magic_rm.walker import Logger, MagicWalker
 
 SKIP = "SKIP"
 REPLACE = "REPLACE"
@@ -24,6 +26,7 @@ RESTORE_MODES = [SKIP, REPLACE]
 class MagicFs(object):
 
     def __init__(self,
+                 progress=False,
                  force=False,
                  interactive=False,
                  recursive=False,
@@ -33,6 +36,7 @@ class MagicFs(object):
                  logger=None):
 
         self.conflict = conflict
+        self.progress = progress
         self.force = force
         self.interactive = interactive
         self.recursive = recursive
@@ -120,10 +124,10 @@ class MagicFs(object):
         if os.path.exists(dst):
             if self.conflict == REPLACE and os.path.isfile(dst):
                 self.__alert("replace file \'{}\', to \'{}\'".format(dst, src), Logger.INFO)
-                shutil.copyfile(src, dst)
+                self.__copy_file(src, dst)
         else:
             self.__alert("copy file \'{}\', to \'{}\'".format(src, dst), Logger.INFO)
-            shutil.copyfile(src, dst)
+            self.__copy_file(src, dst)
 
     def _copy_dir(self, src, dst):
         self._build_dest(dst)
@@ -155,8 +159,43 @@ class MagicFs(object):
     def __rmdir(self, path):
         os.rmdir(path)
 
+    def __copy_file(self, src, dst):
+        if self.progress:
+            MagicFs.__run_task(
+                task=lambda: shutil.copyfile(src, dst),
+                total_size=os.path.getsize(src),
+                get_now_size=lambda: os.path.getsize(dst),
+            )
+        else:
+            shutil.copyfile(src, dst)
+
     def __rmfile(self, path):
-        os.remove(path)
+        if self.progress:
+            MagicFs.__run_task(
+                task=lambda: os.remove(path),
+                total_size=os.path.getsize(path),
+                get_now_size=lambda: os.path.getsize(path),
+            )
+        else:
+            os.remove(path)
+
+    @staticmethod
+    def __run_task(task, total_size, get_now_size):
+        PROGRESS_SIZE = 100
+        worker = threading.Thread(target=task)
+        worker.start()
+
+        while worker.isAlive():
+            time.sleep(1)
+
+            try:
+                now_size = get_now_size()
+            except Exception:
+                return
+
+            progress = int((float(now_size) / total_size) * PROGRESS_SIZE)
+            print("{}>{}|{}".format("-" * progress, " " * (PROGRESS_SIZE - progress), "\033[F"))
+        print()
 
     def __alert(self, message, message_type, error_type=None):
         if self.logger != None:

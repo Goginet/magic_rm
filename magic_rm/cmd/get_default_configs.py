@@ -5,6 +5,10 @@
 
 def get_default_config_toml():
     return '''
+[general]
+    ## Show progress for long operations
+    progress = true
+
 [remove]
     ## Follow the symlinks
     # symlinks = true
@@ -44,6 +48,9 @@ def get_default_config_toml():
 def get_default_config_json():
     return '''
 {
+    "general: {
+        "progress": true,
+    },
     "remove": {
         "symlinks": true,
         "recursive": true,

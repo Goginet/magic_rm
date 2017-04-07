@@ -79,6 +79,7 @@ def main():
         kwargs.update(args['trash'])
         kwargs.update(args['remove'])
         kwargs.update(args['restore'])
+        kwargs.update(args['general'])
         return MagicTrasher(logger=logger, **kwargs)
 
     def create_logger():
