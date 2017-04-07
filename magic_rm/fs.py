@@ -118,7 +118,7 @@ class MagicFs(object):
         self._build_dest(dst)
 
         if os.path.exists(dst):
-            if self.conflict == MERGE and os.path.isfile(dst):
+            if self.conflict == REPLACE and os.path.isfile(dst):
                 self.__alert("replace file \'{}\', to \'{}\'".format(dst, src), Logger.INFO)
                 shutil.copyfile(src, dst)
         else:

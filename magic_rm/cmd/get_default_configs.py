@@ -51,7 +51,7 @@ def get_default_config_json():
         "retention": "P1D"
     },
     "restore": {
-        "conflict_resolve": true
+        "conflict_resolve": "SKIP"
     },
     "logger": {
         "log_level": "DEBUG",
