@@ -192,20 +192,25 @@ class MagicFs(object):
     @staticmethod
     def __run_task(task, total_size, get_now_size):
         PROGRESS_SIZE = 100
+        def print_progress(now_size):
+            progress = int((float(now_size + 1) / (total_size + 1)) * PROGRESS_SIZE)
+            print("{}>{}|{}".format("-" * progress, " " * (PROGRESS_SIZE - progress), "\033[F"))
+
         worker = threading.Thread(target=task)
         worker.start()
+        time.sleep(0.01)
 
         while worker.isAlive():
-            time.sleep(1)
-
             try:
                 now_size = get_now_size()
             except Exception:
                 return
 
-            progress = int((float(now_size) / total_size) * PROGRESS_SIZE)
-            print("{}>{}|{}".format("-" * progress, " " * (PROGRESS_SIZE - progress), "\033[F"))
-        print()
+            time.sleep(0.5)
+
+            print_progress(now_size)
+        print_progress(total_size)
+        print
 
     def __alert(self, message, message_type, error_type=None):
         if self.logger != None:
