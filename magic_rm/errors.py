@@ -12,26 +12,14 @@ class Error(Exception):
     def __str__(self):
         return repr(self.value)
 
-class DeleterNotFoundError(Error):
-    code = 100
-
-class DeleterNotEmptyError(Error):
-    code = 101
-
-class DeleterNotFileError(Error):
-    code = 102
-
-class DeleterRemoveError(Error):
-    code = 103
-
-class TrasherNotFoundError(Error):
+class NotFoundError(Error):
     code = 200
 
-class TrasherNotExistsError(Error):
+class NotExistsError(Error):
     code = 201
 
-class TrasherRestoreConflict(Error):
-    code = 202
-
-class TrasherNotIndexedError(Error):
+class NotIndexedError(Error):
     code = 203
+
+class NotEmptyError(Error):
+    code = 204

@@ -6,10 +6,9 @@
 import datetime
 import os
 import pickle
-import shutil
 
 from magic_rm.fs import MagicFs, SKIP
-from magic_rm.errors import *
+from magic_rm.errors import NotFoundError, NotExistsError, NotIndexedError, NotEmptyError
 from magic_rm.logger import Logger
 
 
@@ -37,7 +36,7 @@ class MagicTrasher(object):
 
     def __init__(self,
                  conflict_resolve=SKIP,
-                 recursive=True,
+                 recursive=False,
                  empty_dir=True,
                  symlinks=False,
                  logger=None,
@@ -55,6 +54,7 @@ class MagicTrasher(object):
         self.meta_file_path = os.path.join(path, "meta.db")
         self.logger = logger
         self.force = force
+        self.recursive = recursive
 
         self.fs = MagicFs(
             conflict=conflict_resolve,
@@ -68,6 +68,8 @@ class MagicTrasher(object):
         )
 
     def remove(self, path):
+        self._preremove(path)
+
         if os.path.exists(path):
             self.flush()
 
@@ -78,15 +80,16 @@ class MagicTrasher(object):
             self._move_to_trash(path, path_in_trash)
         else:
             self.__alert("Cannot move to trash '{}': No such file or directory".format(path),
-                         Logger.ERROR, TrasherNotFoundError)
+                         Logger.ERROR, NotFoundError)
 
     def restore(self, item_name):
-        self.fs.regexp = None
+        self._prerestore(item_name)
+
         item = self._meta_list().get(item_name)
 
         if item is None:
             self.__alert("Item: \'{}\' does not exists in trash.".format(item_name),
-                         Logger.ERROR, TrasherNotExistsError)
+                         Logger.ERROR, NotExistsError)
             return
 
         self._restore_item(item_name, item)
@@ -105,6 +108,14 @@ class MagicTrasher(object):
 
     def list_trash(self):
         return self._meta_list()
+
+    def _prerestore(self, item_name):
+        self.fs.regexp = None
+
+    def _preremove(self, path):
+        if len(os.listdir(path)) != 0 and not self.recursive:
+            raise self.__alert("Cannot remove \'{}\': Directory not empty".format(path),
+                               Logger.ERROR, NotEmptyError)
 
     def _move_to_trash(self, path, path_in_trash):
         def inc_path(path, index):
@@ -133,7 +144,7 @@ class MagicTrasher(object):
             self.fs.move(path_in_trash, real_path)
         else:
             self.logger.alert("Can't found '{}' item in trash. It's lost.",
-                              Logger.ERROR, TrasherNotIndexedError)
+                              Logger.ERROR, NotIndexedError)
 
         self._meta_remove(item_name)
 

@@ -10,11 +10,10 @@
 
 import os
 import shutil
-import sys
 import threading
 import time
 
-from magic_rm.errors import *
+from magic_rm.errors import NotEmptyError
 from magic_rm.walker import Logger, MagicWalker
 
 SKIP = "SKIP"
@@ -160,14 +159,17 @@ class MagicFs(object):
 
     def _remove_dir(self, path):
         self.__alert("remove dir \'{}\'".format(path), Logger.INFO)
-        self.__rmdir(path)
+        if len(os.listdir(path)) == 0:
+            self.__rmdir(path)
+        else:
+            raise self.__alert("Cannot remove \'{}\': Directory not empty".format(path),
+                               Logger.ERROR, NotEmptyError)
 
     def __unlink(self, path):
         os.unlink(path)
 
     def __rmdir(self, path):
-        if len(os.listdir(path)) == 0:
-            os.rmdir(path)
+        os.rmdir(path)
 
     def __copy_file(self, src, dst):
         if self.progress:

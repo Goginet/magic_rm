@@ -41,7 +41,7 @@ class MagicWalker(object):
             self._walk(path)
         else:
             self.__alert("Cannot find '{}': No such file or directory".format(path),
-                         Logger.ERROR, DeleterNotFoundError)
+                         Logger.ERROR, NotFoundError)
 
         self.__used_symlinks = []
 
