@@ -9,6 +9,9 @@ def get_default_config_toml():
     ## Show progress for long operations
     progress = true
 
+    ## Ignore all errors
+    # force=true
+
 [remove]
     ## Follow the symlinks
     # symlinks = true
@@ -53,6 +56,7 @@ def get_default_config_json():
 {
     "general: {
         "progress": true,
+        "force": true,
     },
     "remove": {
         "regexp": null,

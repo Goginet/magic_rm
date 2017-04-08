@@ -78,6 +78,10 @@ def parse_args():
     restore_parser.add_argument('--progress', action='store_true',
                                 dest='general.progress', default=argparse.SUPPRESS,
                                 help='Show progress for long operations')
+    restore_parser.add_argument('-f', '--force', action='store_true',
+                                dest='general.force', default=argparse.SUPPRESS,
+                                help='Ignore all errors')
+
     restore_mode_group = restore_parser.add_mutually_exclusive_group()
     restore_mode_group.add_argument('-r', '--replace', action='store_const',
                                     dest='restore.conflict_resolve', default=argparse.SUPPRESS,
