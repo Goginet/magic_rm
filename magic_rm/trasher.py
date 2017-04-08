@@ -84,8 +84,11 @@ class MagicTrasher(object):
         item = self._meta_list().get(item_name)
 
         if item is None:
-            self.__alert("Item: \'{}\' does not exists in trash.".format(item_name),
-                         Logger.ERROR, NotExistsError)
+            self.alert(
+                "Item: \'{}\' does not exists in trash.".format(item_name),
+                Logger.ERROR,
+                NotExistsError
+            )
             return
 
         self._restore_item(item_name, item)
@@ -110,12 +113,18 @@ class MagicTrasher(object):
 
     def _preremove(self, path):
         if not os.path.exists(path):
-            self.__alert("Cannot move to trash '{}': No such file or directory".format(path),
-                         Logger.ERROR, NotFoundError)
+            self.alert(
+                "Cannot move to trash '{}': No such file or directory".format(path),
+                Logger.ERROR,
+                NotFoundError
+            )
 
         if len(os.listdir(path)) != 0 and not self.recursive:
-            raise self.__alert("Cannot remove \'{}\': Directory not empty".format(path),
-                               Logger.ERROR, NotEmptyError)
+            raise self.alert(
+                "Cannot remove \'{}\': Directory not empty".format(path),
+                Logger.ERROR,
+                NotEmptyError
+            )
 
     def _move_to_trash(self, path, path_in_trash):
         def inc_path(path, index):
@@ -143,8 +152,11 @@ class MagicTrasher(object):
         if os.path.exists(path_in_trash):
             self.fs.move(path_in_trash, real_path)
         else:
-            self.logger.alert("Can't found '{}' item in trash. It's lost.",
-                              Logger.ERROR, NotIndexedError)
+            self.logger.alert(
+                "Can't found '{}' item in trash. It's lost.",
+                Logger.ERROR,
+                NotIndexedError
+            )
 
         self._meta_remove(item_name)
 
@@ -173,7 +185,7 @@ class MagicTrasher(object):
     def _meta_list(self, trash_items=None):
         return trash_items
 
-    def __alert(self, message, message_type, error_type=None):
+    def alert(self, message, message_type, error_type=None):
         if self.logger != None:
             self.logger.alert(message, message_type)
 

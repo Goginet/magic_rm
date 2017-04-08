@@ -45,13 +45,6 @@ class MagicFs(object):
         self.logger = logger
         self.symlinks = symlinks
 
-        self.walker = MagicWalker(
-            force=self.force,
-            regexp=self.regexp,
-            recursive=self.recursive,
-            symlinks=self.symlinks,
-        )
-
     def move(self, src, dst):
         self.copy(src, dst)
         self.remove(src)
@@ -66,11 +59,18 @@ class MagicFs(object):
         def remove_dir(path):
             self._remove_dir(path)
 
-        self.walker.link_handler = remove_link
-        self.walker.file_handler = remove_file
-        self.walker.after_go_to_dir_handler = remove_dir
+        walker = MagicWalker(
+            force=self.force,
+            regexp=self.regexp,
+            recursive=True,
+            logger=self.logger,
+            symlinks=self.symlinks,
+            link_handler=remove_link,
+            file_handler=remove_file,
+            after_go_to_dir_handler=remove_dir,
+        )
 
-        self.walker.walk(path)
+        walker.walk(path)
 
     def copy(self, src, dst):
 
@@ -106,23 +106,20 @@ class MagicFs(object):
 
         walker = MagicWalker(
             force=self.force,
-            recursive=self.recursive,
+            regexp=self.regexp,
+            logger=self.logger,
+            recursive=True,
             symlinks=self.symlinks,
             link_handler=copy_link,
             file_handler=copy_file,
-            regexp=self.regexp,
-            before_go_to_dir_handler=copy_dir
+            before_go_to_dir_handler=copy_dir,
         )
-
-        self.walker.link_handler = copy_link
-        self.walker.file_handler = copy_file
-        self.walker.after_go_to_dir_handler = copy_dir
 
         walker.walk(src)
 
     def _copy_symlink(self, src, dst):
         self._build_dest(dst)
-        self.__alert("copy symlink \'{}\', to \'{}\'".format(src, dst), Logger.INFO)
+        self.alert("copy symlink \'{}\', to \'{}\'".format(src, dst), Logger.INFO)
         linkto = os.readlink(src)
         os.symlink(linkto, dst)
 
@@ -131,17 +128,17 @@ class MagicFs(object):
 
         if os.path.exists(dst):
             if self.conflict == REPLACE and os.path.isfile(dst):
-                self.__alert("replace file \'{}\', to \'{}\'".format(dst, src), Logger.INFO)
+                self.alert("replace file \'{}\', to \'{}\'".format(dst, src), Logger.INFO)
                 self.__copy_file(src, dst)
         else:
-            self.__alert("copy file \'{}\', to \'{}\'".format(src, dst), Logger.INFO)
+            self.alert("copy file \'{}\', to \'{}\'".format(src, dst), Logger.INFO)
             self.__copy_file(src, dst)
 
     def _copy_dir(self, src, dst):
         self._build_dest(dst)
 
         if not os.path.exists(dst):
-            self.__alert("copy dir \'{}\', to \'{}\'".format(src, dst), Logger.INFO)
+            self.alert("copy dir \'{}\', to \'{}\'".format(src, dst), Logger.INFO)
             os.mkdir(dst)
 
     def _build_dest(self, path):
@@ -150,20 +147,23 @@ class MagicFs(object):
             os.makedirs(dest)
 
     def _remove_symlink(self, path):
-        self.__alert("remove symlink \'{}\'".format(path), Logger.INFO)
+        self.alert("remove symlink \'{}\'".format(path), Logger.INFO)
         self.__unlink(path)
 
     def _remove_file(self, path):
-        self.__alert("remove file \'{}\'".format(path), Logger.INFO)
+        self.alert("remove file \'{}\'".format(path), Logger.INFO)
         self.__rmfile(path)
 
     def _remove_dir(self, path):
-        self.__alert("remove dir \'{}\'".format(path), Logger.INFO)
+        self.alert("remove dir \'{}\'".format(path), Logger.INFO)
         if len(os.listdir(path)) == 0:
             self.__rmdir(path)
         else:
-            self.__alert("Cannot remove \'{}\': Directory not empty".format(path),
-                         Logger.ERROR, NotEmptyError)
+            self.alert(
+                "Cannot remove \'{}\': Directory not empty".format(path),
+                Logger.ERROR,
+                NotEmptyError
+            )
 
     def __unlink(self, path):
         os.unlink(path)
@@ -214,7 +214,7 @@ class MagicFs(object):
         print_progress(total_size)
         print
 
-    def __alert(self, message, message_type, error_type=None):
+    def alert(self, message, message_type, error_type=None):
         if self.logger != None:
             self.logger.alert(message, message_type)
 

@@ -40,8 +40,10 @@ class MagicWalker(object):
         if os.path.exists(path):
             self._walk(path)
         else:
-            self.__alert("Cannot find '{}': No such file or directory".format(path),
-                         Logger.ERROR, NotFoundError)
+            self.alert(
+                "Cannot find '{}': No such file or directory".format(path),
+                Logger.ERROR, NotFoundError
+            )
 
         self.__used_symlinks = []
 
@@ -87,11 +89,16 @@ class MagicWalker(object):
     def __check_regexp(self, regexp, path):
         if regexp != None:
             rez = re.search(regexp, path)
+
             if rez != None:
                 if rez.group(0) == path:
                     return True
-            self.__alert("File not deleted '{}': Does not match the pattern.".format(path),
-                         Logger.DEBUG)
+
+            self.alert(
+                "File not deleted '{}': Does not match the pattern.".format(path),
+                Logger.DEBUG
+            )
+
             return False
         else:
             return True
@@ -118,7 +125,7 @@ class MagicWalker(object):
         if self.link_handler != None:
             self.link_handler(path)
 
-    def __alert(self, message, message_type, error_type=None):
+    def alert(self, message, message_type, error_type=None):
         if self.logger != None:
             self.logger.alert(message, message_type)
 
