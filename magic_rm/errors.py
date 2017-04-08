@@ -23,3 +23,12 @@ class NotIndexedError(Error):
 
 class NotEmptyError(Error):
     code = 204
+
+class RemoveFromDirError(Error):
+    code = 205
+
+class CopyError(Error):
+    code = 206
+
+class GoInsideDirError(Error):
+    code = 207

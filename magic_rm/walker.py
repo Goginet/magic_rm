@@ -8,6 +8,7 @@ import stat
 import os
 import sys
 
+from magic_rm.accsess_checkers import check_go_inside
 from magic_rm.errors import *
 from magic_rm.logger import Logger
 
@@ -76,6 +77,7 @@ class MagicWalker(object):
         elif os.path.isfile(path):
             self.__call_when_file(path)
 
+    @check_go_inside
     def _go_to_dir(self, path):
         def remove(path):
             self.__call_befor_go_to_dir(path)

@@ -7,6 +7,7 @@ import datetime
 import os
 import pickle
 
+from magic_rm.accsess_checkers import check_go_inside
 from magic_rm.fs import MagicFs, SKIP
 from magic_rm.errors import NotFoundError, NotExistsError, NotIndexedError, NotEmptyError
 from magic_rm.logger import Logger
@@ -111,6 +112,7 @@ class MagicTrasher(object):
     def _prerestore(self, item_name):
         self.fs.regexp = None
 
+    @check_go_inside
     def _preremove(self, path):
         if not os.path.exists(path):
             self.alert(

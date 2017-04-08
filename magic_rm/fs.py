@@ -13,6 +13,7 @@ import shutil
 import threading
 import time
 
+from magic_rm.accsess_checkers import check_access_copy, check_access_remove
 from magic_rm.errors import NotEmptyError
 from magic_rm.walker import Logger, MagicWalker
 
@@ -117,12 +118,14 @@ class MagicFs(object):
 
         walker.walk(src)
 
+    @check_access_copy
     def _copy_symlink(self, src, dst):
         self._build_dest(dst)
         self.alert("copy symlink \'{}\', to \'{}\'".format(src, dst), Logger.INFO)
         linkto = os.readlink(src)
         os.symlink(linkto, dst)
 
+    @check_access_copy
     def _copy_file(self, src, dst):
         self._build_dest(dst)
 
@@ -134,6 +137,7 @@ class MagicFs(object):
             self.alert("copy file \'{}\', to \'{}\'".format(src, dst), Logger.INFO)
             self.__copy_file(src, dst)
 
+    @check_access_copy
     def _copy_dir(self, src, dst):
         self._build_dest(dst)
 
@@ -146,14 +150,17 @@ class MagicFs(object):
         if not os.path.exists(dest):
             os.makedirs(dest)
 
+    @check_access_remove
     def _remove_symlink(self, path):
         self.alert("remove symlink \'{}\'".format(path), Logger.INFO)
         self.__unlink(path)
 
+    @check_access_remove
     def _remove_file(self, path):
         self.alert("remove file \'{}\'".format(path), Logger.INFO)
         self.__rmfile(path)
 
+    @check_access_remove
     def _remove_dir(self, path):
         self.alert("remove dir \'{}\'".format(path), Logger.INFO)
         if len(os.listdir(path)) == 0:
