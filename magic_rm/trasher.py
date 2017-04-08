@@ -35,6 +35,20 @@ def meta_update(func):
 
 class MagicTrasher(object):
 
+    """Object for for work with trash dir.
+    Keyword Arguments:
+        - conflict_resolve -- mode for resolved conflicts (SKIP|MERGE)
+        - recursive -- remove recursive
+        - empty_dir -- remove empty dir
+        - symlinks -- go to symlinks
+        - logger -- logger object
+        - path -- path to the trash dir
+        - regexp -- regular expression for remove
+        - force -- if force is true, ignore all errors
+        - progress -- show progress bar for long operations
+        - retention -- Time of file store in trash
+    """
+
     def __init__(self,
                  conflict_resolve=SKIP,
                  recursive=False,
@@ -68,7 +82,9 @@ class MagicTrasher(object):
             logger=logger,
         )
 
+    """ Move file to trash """
     def remove(self, path):
+
         self._preremove(path)
 
         self.flush()
@@ -79,6 +95,7 @@ class MagicTrasher(object):
 
         self._move_to_trash(path, path_in_trash)
 
+    """ Restore item from trash """
     def restore(self, item_name):
         self._prerestore(item_name)
 
@@ -94,9 +111,11 @@ class MagicTrasher(object):
 
         self._restore_item(item_name, item)
 
+    """ Remove old items """
     def flush(self):
         self.flush_by_retention_time()
 
+    """ Remove old by retention time """
     def flush_by_retention_time(self):
         items = self._meta_list()
 
@@ -106,6 +125,7 @@ class MagicTrasher(object):
                 if datetime.datetime.now() > end_time:
                     self._remove_item(name)
 
+    """ Get trash items """
     def list_trash(self):
         return self._meta_list()
 

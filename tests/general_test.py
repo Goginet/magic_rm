@@ -18,6 +18,11 @@ class TestGeneral(fake_filesystem_unittest.TestCase):
     NOT_FOUND = join(BASE_DIR, "bad/bad/soooooo bad")
     EMPTY_DIR = join(BASE_DIR, "empty")
 
+    BASE_DIR_2 = "/go/away"
+    NO_X_DIR = join(BASE_DIR_2, "no_x")
+    NO_W_DIR = join(BASE_DIR_2, "no_w")
+    NO_R_DIR = join(BASE_DIR_2, "no_r")
+
     FILE_FOR_MERGE = join(BASE_DIR, "merge_file")
 
     REGEXP_POSTFIX = ".regexp"
@@ -45,6 +50,11 @@ class TestGeneral(fake_filesystem_unittest.TestCase):
         self.fs.CreateDirectory(self.EMPTY_DIR)
         self.fs.CreateDirectory(join(self.BASE_DIR, "dir1"))
         self.fs.CreateDirectory(join(self.BASE_DIR, "dir1", "dir2"))
+
+        self.fs.CreateDirectory(self.BASE_DIR_2)
+        self.fs.CreateDirectory(self.NO_R_DIR, pern_bits=000)
+        self.fs.CreateDirectory(self.NO_W_DIR, pern_bits=000)
+        self.fs.CreateDirectory(self.NO_X_DIR, pern_bits=000)
 
 
         self.fs.CreateFile(join(self.BASE_DIR, "dir1", "a"))

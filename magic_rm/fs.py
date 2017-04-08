@@ -25,10 +25,19 @@ RESTORE_MODES = [SKIP, REPLACE]
 
 class MagicFs(object):
 
+    """Object for work with file system.
+    Keyword Arguments:
+        - force -- if force is true, ignore all errors
+        - progress -- show progress bar
+        - symlinks -- go to symlinks
+        - regexp -- regular expression for remove
+        - logger -- logger object
+        - conflict_resolve -- mode for resolved conflicts (SKIP|MERGE)
+    """
+
     def __init__(self,
                  progress=False,
                  force=False,
-                 interactive=False,
                  recursive=False,
                  empty_dir=False,
                  regexp=None,
@@ -40,16 +49,17 @@ class MagicFs(object):
         self.conflict = conflict
         self.progress = progress
         self.force = force
-        self.interactive = interactive
         self.recursive = recursive
         self.empty_dir = empty_dir
         self.logger = logger
         self.symlinks = symlinks
 
+    """ Move file or dir from src to dst """
     def move(self, src, dst):
         self.copy(src, dst)
         self.remove(src)
-
+    
+    """ Remove file or dir path """
     def remove(self, path):
         def remove_link(path):
             self._remove_symlink(path)
@@ -72,7 +82,8 @@ class MagicFs(object):
         )
 
         walker.walk(path)
-
+    
+    """ Copy file or dir path """
     def copy(self, src, dst):
 
         def copy_link(path):

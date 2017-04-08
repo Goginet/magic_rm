@@ -15,6 +15,19 @@ from magic_rm.logger import Logger
 
 class MagicWalker(object):
 
+    """Object for for walk to the directories tree.
+    Keyword Arguments:
+        - force -- if force is true, ignore all errors
+        - recursive -- remove recursive
+        - symlinks -- go to symlinks
+        - regexp -- regular expression for remove
+        - logger -- logger object
+        - link_handler -- func which will be called when walker find link
+        - file_handler -- func which will be called when walker find file
+        - after_go_to_dir_handler -- func which will be called when walker go out from the directory
+        - before_go_to_dir_handler -- func which will be called before go to directory
+    """
+
     def __init__(self,
                  force=False,
                  recursive=True,
