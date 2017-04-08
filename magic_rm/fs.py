@@ -162,8 +162,8 @@ class MagicFs(object):
         if len(os.listdir(path)) == 0:
             self.__rmdir(path)
         else:
-            raise self.__alert("Cannot remove \'{}\': Directory not empty".format(path),
-                               Logger.ERROR, NotEmptyError)
+            self.__alert("Cannot remove \'{}\': Directory not empty".format(path),
+                         Logger.ERROR, NotEmptyError)
 
     def __unlink(self, path):
         os.unlink(path)

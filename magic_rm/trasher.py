@@ -70,17 +70,13 @@ class MagicTrasher(object):
     def remove(self, path):
         self._preremove(path)
 
-        if os.path.exists(path):
-            self.flush()
+        self.flush()
 
-            path = os.path.abspath(path)
+        path = os.path.abspath(path)
 
-            path_in_trash = os.path.join(self.path, os.path.basename(path))
+        path_in_trash = os.path.join(self.path, os.path.basename(path))
 
-            self._move_to_trash(path, path_in_trash)
-        else:
-            self.__alert("Cannot move to trash '{}': No such file or directory".format(path),
-                         Logger.ERROR, NotFoundError)
+        self._move_to_trash(path, path_in_trash)
 
     def restore(self, item_name):
         self._prerestore(item_name)
@@ -113,6 +109,10 @@ class MagicTrasher(object):
         self.fs.regexp = None
 
     def _preremove(self, path):
+        if not os.path.exists(path):
+            self.__alert("Cannot move to trash '{}': No such file or directory".format(path),
+                         Logger.ERROR, NotFoundError)
+
         if len(os.listdir(path)) != 0 and not self.recursive:
             raise self.__alert("Cannot remove \'{}\': Directory not empty".format(path),
                                Logger.ERROR, NotEmptyError)
