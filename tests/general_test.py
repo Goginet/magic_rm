@@ -51,12 +51,6 @@ class TestGeneral(fake_filesystem_unittest.TestCase):
         self.fs.CreateDirectory(join(self.BASE_DIR, "dir1"))
         self.fs.CreateDirectory(join(self.BASE_DIR, "dir1", "dir2"))
 
-        self.fs.CreateDirectory(self.BASE_DIR_2)
-        self.fs.CreateDirectory(self.NO_R_DIR, pern_bits=000)
-        self.fs.CreateDirectory(self.NO_W_DIR, pern_bits=000)
-        self.fs.CreateDirectory(self.NO_X_DIR, pern_bits=000)
-
-
         self.fs.CreateFile(join(self.BASE_DIR, "dir1", "a"))
         self.fs.CreateFile(join(self.BASE_DIR, "dir1", "b"))
         self.fs.CreateFile(join(self.BASE_DIR, "dir1", "dir2", "a"))
