@@ -3,6 +3,7 @@
 #
 # Author Georgy Schapchits <gogi.soft.gm@gmail.com>.
 
+import re
 import stat
 import os
 import sys
@@ -17,12 +18,14 @@ class MagicWalker(object):
                  force=False,
                  recursive=True,
                  symlinks=False,
+                 regexp=None,
                  logger=None,
                  link_handler=None,
                  file_handler=None,
                  after_go_to_dir_handler=None,
                  before_go_to_dir_handler=None):
 
+        self.regexp = regexp
         self.symlinks = symlinks
         self.recursive = recursive
         self.force = force
@@ -81,17 +84,31 @@ class MagicWalker(object):
 
         remove(path)
 
+    def __check_regexp(self, regexp, path):
+        if regexp != None:
+            rez = re.search(regexp, path)
+            if rez != None:
+                if rez.group(0) == path:
+                    return True
+            self.__alert("File not deleted '{}': Does not match the pattern.".format(path),
+                         Logger.DEBUG)
+            return False
+        else:
+            return True
+
     def _call_content(self, path):
         for el in os.listdir(path):
             self._walk(os.path.join(path, el))
 
     def __call_when_file(self, path):
         if self.file_handler != None:
-            self.file_handler(path)
+            if self.__check_regexp(self.regexp, path):
+                self.file_handler(path)
 
     def __call_befor_go_to_dir(self, path):
         if self.before_go_to_dir_handler != None:
-            self.before_go_to_dir_handler(path)
+            if self.__check_regexp(self.regexp, path):
+                self.before_go_to_dir_handler(path)
 
     def __call_after_go_to_dir(self, path):
         if self.after_go_to_dir_handler != None:

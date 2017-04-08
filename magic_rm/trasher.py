@@ -42,12 +42,14 @@ class MagicTrasher(object):
                  symlinks=False,
                  logger=None,
                  path="magic_trash",
+                 regexp=None,
                  force=False,
                  progress=False,
                  retention=None):
 
         self.conflict_resolve = conflict_resolve
         self.path = path
+        self.regexp = regexp
         self.progress = progress
         self.retention = retention
         self.meta_file_path = os.path.join(path, "meta.db")
@@ -57,6 +59,7 @@ class MagicTrasher(object):
         self.fs = MagicFs(
             conflict=conflict_resolve,
             force=force,
+            regexp=regexp,
             progress=progress,
             recursive=recursive,
             empty_dir=empty_dir,
@@ -78,6 +81,7 @@ class MagicTrasher(object):
                          Logger.ERROR, TrasherNotFoundError)
 
     def restore(self, item_name):
+        self.fs.regexp = None
         item = self._meta_list().get(item_name)
 
         if item is None:

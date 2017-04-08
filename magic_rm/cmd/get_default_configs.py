@@ -16,6 +16,9 @@ def get_default_config_toml():
     ## Recursive remove the dir
     # recursive = true
 
+    ## Regexp template for removed files
+    # regexp = ".*"
+
     ## Remove empty dir
     # empty_dir = true
 
@@ -52,6 +55,7 @@ def get_default_config_json():
         "progress": true,
     },
     "remove": {
+        "regexp": null,
         "symlinks": true,
         "recursive": true,
         "empty_dir": true,

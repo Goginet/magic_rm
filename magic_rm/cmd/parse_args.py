@@ -53,6 +53,9 @@ def parse_args():
                         default=argparse.SUPPRESS, help='Path to trash directory')
 
 
+    remove_parser.add_argument('--regexp', action='store',
+                               dest='remove.regexp', default=argparse.SUPPRESS,
+                               help='Regexp template for removed files')
     remove_parser.add_argument('-l', '--symlinks', action='store_true',
                                dest='remove.symlinks', default=argparse.SUPPRESS,
                                help='Follow the symlinks')

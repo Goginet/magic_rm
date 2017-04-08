@@ -31,10 +31,12 @@ class MagicFs(object):
                  interactive=False,
                  recursive=False,
                  empty_dir=False,
+                 regexp=None,
                  symlinks=False,
                  conflict=REPLACE,
                  logger=None):
 
+        self.regexp = regexp
         self.conflict = conflict
         self.progress = progress
         self.force = force
@@ -43,6 +45,13 @@ class MagicFs(object):
         self.empty_dir = empty_dir
         self.logger = logger
         self.symlinks = symlinks
+
+        self.walker = MagicWalker(
+            force=self.force,
+            regexp=self.regexp,
+            recursive=self.recursive,
+            symlinks=self.symlinks,
+        )
 
     def move(self, src, dst):
         self.copy(src, dst)
@@ -58,16 +67,11 @@ class MagicFs(object):
         def remove_dir(path):
             self._remove_dir(path)
 
-        walker = MagicWalker(
-            force=self.force,
-            recursive=self.recursive,
-            symlinks=self.symlinks,
-            link_handler=remove_link,
-            file_handler=remove_file,
-            after_go_to_dir_handler=remove_dir,
-        )
+        self.walker.link_handler = remove_link
+        self.walker.file_handler = remove_file
+        self.walker.after_go_to_dir_handler = remove_dir
 
-        walker.walk(path)
+        self.walker.walk(path)
 
     def copy(self, src, dst):
 
@@ -107,8 +111,13 @@ class MagicFs(object):
             symlinks=self.symlinks,
             link_handler=copy_link,
             file_handler=copy_file,
+            regexp=self.regexp,
             before_go_to_dir_handler=copy_dir
         )
+
+        self.walker.link_handler = copy_link
+        self.walker.file_handler = copy_file
+        self.walker.after_go_to_dir_handler = copy_dir
 
         walker.walk(src)
 
@@ -157,7 +166,8 @@ class MagicFs(object):
         os.unlink(path)
 
     def __rmdir(self, path):
-        os.rmdir(path)
+        if len(os.listdir(path)) == 0:
+            os.rmdir(path)
 
     def __copy_file(self, src, dst):
         if self.progress:
