@@ -7,6 +7,7 @@ import os
 
 import toml
 
+from magic_rm.cmd.parse_args import *
 from magic_rm.cmd.get_default_configs import *
 from magic_rm.cmd.parse_args import parse_args
 from magic_rm.errors import Error
@@ -61,8 +62,8 @@ def print_trash_list(trasher):
     for name, el in meta.iteritems():
         print template.format(name, el['time'].strftime("%y-%m-%d %H:%M:%S"), el['retention'])
 
-def get_args():
-    args, groups = parse_args()
+def get_args(mode):
+    args, groups = parse_args(mode)
 
     if args.get('config_json') != None:
         config_args = load_json_config(args.get('config_json'))
@@ -71,8 +72,8 @@ def get_args():
 
     return grouped_args(args, config_args, *groups)
 
-def main():
-    args = get_args()
+def main(mode=REMOVE):
+    args = get_args(mode)
 
     def create_trasher(logger):
         kwargs = {}
@@ -89,21 +90,21 @@ def main():
 
     def run():
         logger = create_logger()
-        if args['command'] == 'remove':
+        if mode == REMOVE:
             trasher = create_trasher(logger)
             for path in args['PATH']:
                 trasher.remove(path)
-        if args['command'] == 'trash-list':
+        if mode == TRASH_LIST:
             trasher = create_trasher(logger)
             print_trash_list(trasher)
-        if args['command'] == 'restore':
+        if mode == RESTORE:
             trasher = create_trasher(logger)
             for path in args['PATH']:
                 trasher.restore(path)
-        if args['command'] == 'flush':
+        if mode == FLUSH:
             trasher = create_trasher(logger)
             trasher.flush()
-        if args['command'] == 'simple-config':
+        if mode == GET_DEFAULT_CONFIG:
             if args['json']:
                 print get_default_config_json()
             else:
@@ -113,6 +114,21 @@ def main():
         run()
     except Error as err:
         exit(err.code)
+
+def remove():
+    main(REMOVE)
+
+def restore():
+    main(RESTORE)
+
+def trash_list():
+    main(TRASH_LIST)
+
+def flush():
+    main(FLUSH)
+
+def get_default_config():
+    main(GET_DEFAULT_CONFIG)
 
 if __name__ == '__main__':
     main()

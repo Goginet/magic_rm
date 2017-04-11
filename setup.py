@@ -18,7 +18,12 @@ setup(
     install_requires=install_requirements,
     packages=find_packages(), entry_points={
         'console_scripts':
-            ['magic_rm = magic_rm.cmd:main']
+            [
+                'magicrm = magic_rm.cmd.main:remove',
+                'magic_restore = magic_rm.cmd.main:restore',
+                'magic_trash_list = magic_rm.cmd.main:trash_list',
+                'magic_flush = magic_rm.cmd.main:flush',
+            ]
     },
     long_description=open(join(dirname(__file__), 'README.md')).read(),
 )
