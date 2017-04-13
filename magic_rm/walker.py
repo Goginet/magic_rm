@@ -93,7 +93,6 @@ class MagicWalker(object):
     @check_go_inside
     def _go_to_dir(self, path):
         def remove(path):
-            self.__call_befor_go_to_dir(path)
             if self.recursive:
                 self._call_content(path)
 
@@ -119,7 +118,9 @@ class MagicWalker(object):
             return True
 
     def _call_content(self, path):
-        for el in os.listdir(path):
+        content = os.listdir(path)
+        self.__call_befor_go_to_dir(path)
+        for el in content:
             self._walk(os.path.join(path, el))
 
     def __call_when_file(self, path):
