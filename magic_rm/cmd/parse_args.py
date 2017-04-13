@@ -82,15 +82,9 @@ def parse_remove_args(parser):
                               "\tP1Y1M1D (1 year, 1 month, 1 day),\n"
                               "\tPT1H1M1S (1 hour, 1 minute, 1 sec))\n"))
 
-    parser.add_argument('PATH', nargs='+', help='output version information and exit')
+    parser.add_argument('PATH', nargs='+', help='Remove path')
 
 def parse_restore_args(parser):
-    parser = argparse.ArgumentParser(description='****Magic remove tool****')
-
-    parser.add_argument('PATH', nargs='+', help='output version information and exit')
-
-    parse_general_args(parser)
-
     parser.add_argument('--progress', action='store_true',
                         dest='general.progress', default=argparse.SUPPRESS,
                         help='Show progress for long operations')
@@ -107,6 +101,8 @@ def parse_restore_args(parser):
                                     dest='restore.conflict_resolve', default=argparse.SUPPRESS,
                                     const=magic_rm.fs.SKIP,
                                     help='restore when item already exists')
+
+    parser.add_argument('NAME', nargs='+', help='Restore Element')
 
     return vars(parser.parse_args()), ['general', 'remove', 'restore', 'trash', 'logger']
 

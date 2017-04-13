@@ -99,8 +99,8 @@ def main(mode=REMOVE):
             print_trash_list(trasher)
         if mode == RESTORE:
             trasher = create_trasher(logger)
-            for path in args['PATH']:
-                trasher.restore(path)
+            for name in args['NAME']:
+                trasher.restore(name)
         if mode == FLUSH:
             trasher = create_trasher(logger)
             trasher.flush()
