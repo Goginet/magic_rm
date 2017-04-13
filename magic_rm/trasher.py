@@ -55,6 +55,7 @@ class MagicTrasher(object):
                  empty_dir=True,
                  symlinks=False,
                  logger=None,
+                 no_trash=False,
                  path="magic_trash",
                  regexp=None,
                  force=False,
@@ -71,6 +72,7 @@ class MagicTrasher(object):
         self.force = force
         self.recursive = recursive
         self.empty_dir = empty_dir
+        self.no_trash = no_trash
 
         self.fs = MagicFs(
             conflict=conflict_resolve,
@@ -92,7 +94,10 @@ class MagicTrasher(object):
 
         path_in_trash = os.path.join(self.path, os.path.basename(path))
 
-        self._move_to_trash(path, path_in_trash)
+        if self.no_trash:
+            self.fs.remove(path)
+        else:
+            self._move_to_trash(path, path_in_trash)
 
     """ Restore item from trash """
     def restore(self, item_name):

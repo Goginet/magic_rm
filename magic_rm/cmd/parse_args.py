@@ -61,6 +61,9 @@ def parse_general_args(parser):
 
 
 def parse_remove_args(parser):
+    parser.add_argument('--no-trash', action='store_true',
+                        dest='remove.no_trash', default=argparse.SUPPRESS,
+                        help='Not save removed elements in trash dir')
     parser.add_argument('--regexp', action='store',
                         dest='remove.regexp', default=argparse.SUPPRESS,
                         help='Regexp template for removed files')

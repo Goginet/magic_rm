@@ -16,6 +16,9 @@ def get_default_config_toml():
     ## Follow the symlinks
     # symlinks = true
 
+    ## Not save removed elements in trash dir
+    # no_trash = true
+
     ## Recursive remove the dir
     # recursive = true
 
@@ -61,6 +64,7 @@ def get_default_config_json():
     "remove": {
         "regexp": null,
         "symlinks": true,
+        "no_trash": false,
         "recursive": true,
         "empty_dir": true,
         "retention": "P1D"
