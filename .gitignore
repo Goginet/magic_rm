@@ -1,6 +1,5 @@
 *.vscode
 **.pyc
-.gitignore
 td
 **.conf
 **.log
