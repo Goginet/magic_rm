@@ -70,14 +70,13 @@ class MagicTrasher(object):
         self.logger = logger
         self.force = force
         self.recursive = recursive
+        self.empty_dir = empty_dir
 
         self.fs = MagicFs(
             conflict=conflict_resolve,
             force=force,
             regexp=regexp,
             progress=progress,
-            recursive=recursive,
-            empty_dir=empty_dir,
             symlinks=symlinks,
             logger=logger,
         )
@@ -141,12 +140,26 @@ class MagicTrasher(object):
                 NotFoundError
             )
 
-        if len(os.listdir(path)) != 0 and not self.recursive:
-            raise self.alert(
-                "Cannot remove \'{}\': Directory not empty".format(path),
-                Logger.ERROR,
-                NotEmptyError
-            )
+        if os.path.isfile(path):
+            if not self.empty_dir or self.recursive:
+                self.alert(
+                    "Cannot remove \'{}\': Is a directory".format(path),
+                    Logger.ERROR,
+                    NotFoundError
+                )
+        elif os.path.isdir(path):
+            if not self.empty_dir:
+                raise self.alert(
+                    "Cannot remove \'{}\': Directory not empty".format(path),
+                    Logger.ERROR,
+                    NotEmptyError
+                )
+            elif not self.recursive and len(os.listdir(path)) != 0:
+                raise self.alert(
+                    "Cannot remove \'{}\': Directory not empty".format(path),
+                    Logger.ERROR,
+                    NotEmptyError
+                )
 
     def _move_to_trash(self, path, path_in_trash):
         def inc_path(path, index):

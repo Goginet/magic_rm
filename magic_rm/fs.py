@@ -38,8 +38,6 @@ class MagicFs(object):
     def __init__(self,
                  progress=False,
                  force=False,
-                 recursive=False,
-                 empty_dir=False,
                  regexp=None,
                  symlinks=False,
                  conflict=REPLACE,
@@ -49,8 +47,6 @@ class MagicFs(object):
         self.conflict = conflict
         self.progress = progress
         self.force = force
-        self.recursive = recursive
-        self.empty_dir = empty_dir
         self.logger = logger
         self.symlinks = symlinks
 
