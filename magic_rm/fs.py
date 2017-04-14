@@ -38,6 +38,7 @@ class MagicFs(object):
     def __init__(self,
                  progress=False,
                  force=False,
+                 dry_run=False,
                  regexp=None,
                  symlinks=False,
                  conflict=REPLACE,
@@ -47,6 +48,7 @@ class MagicFs(object):
         self.conflict = conflict
         self.progress = progress
         self.force = force
+        self.dry_run = dry_run
         self.logger = logger
         self.symlinks = symlinks
 
@@ -129,8 +131,7 @@ class MagicFs(object):
     def _copy_symlink(self, src, dst):
         self._build_dest(dst)
         self.alert("copy symlink \'{}\', to \'{}\'".format(src, dst), Logger.INFO)
-        linkto = os.readlink(src)
-        os.symlink(linkto, dst)
+        self.__copy_link(src, dst)
 
     @check_access_copy
     def _copy_file(self, src, dst):
@@ -150,12 +151,13 @@ class MagicFs(object):
 
         if not os.path.exists(dst):
             self.alert("copy dir \'{}\', to \'{}\'".format(src, dst), Logger.INFO)
-            os.mkdir(dst)
+            self.__copy_dir(src, dst)
 
     def _build_dest(self, path):
         dest = os.path.dirname(path)
         if not os.path.exists(dest):
-            os.makedirs(dest)
+            if not self.dry_run:
+                os.makedirs(dest)
 
     @check_access_remove
     def _remove_symlink(self, path):
@@ -170,40 +172,46 @@ class MagicFs(object):
     @check_access_remove
     def _remove_dir(self, path):
         self.alert("remove dir \'{}\'".format(path), Logger.INFO)
-        if len(os.listdir(path)) == 0:
-            self.__rmdir(path)
-        else:
-            self.alert(
-                "Cannot remove \'{}\': Directory not empty".format(path),
-                Logger.ERROR,
-                NotEmptyError
-            )
+        self.__rmdir(path)
 
     def __unlink(self, path):
-        os.unlink(path)
+        if not self.dry_run:
+            os.unlink(path)
 
     def __rmdir(self, path):
-        os.rmdir(path)
-
-    def __copy_file(self, src, dst):
-        if self.progress:
-            MagicFs.__run_task(
-                task=lambda: shutil.copyfile(src, dst),
-                total_size=os.path.getsize(src),
-                get_now_size=lambda: os.path.getsize(dst),
-            )
-        else:
-            shutil.copyfile(src, dst)
+        if not self.dry_run:
+            os.rmdir(path)
 
     def __rmfile(self, path):
-        if self.progress:
-            MagicFs.__run_task(
-                task=lambda: os.remove(path),
-                total_size=os.path.getsize(path),
-                get_now_size=lambda: os.path.getsize(path),
-            )
-        else:
-            os.remove(path)
+        if not self.dry_run:
+            if self.progress:
+                MagicFs.__run_task(
+                    task=lambda: os.remove(path),
+                    total_size=os.path.getsize(path),
+                    get_now_size=lambda: os.path.getsize(path),
+                )
+            else:
+                os.remove(path)
+
+    def __copy_file(self, src, dst):
+        if not self.dry_run:
+            if self.progress:
+                MagicFs.__run_task(
+                    task=lambda: shutil.copyfile(src, dst),
+                    total_size=os.path.getsize(src),
+                    get_now_size=lambda: os.path.getsize(dst),
+                )
+            else:
+                shutil.copyfile(src, dst)
+
+    def __copy_link(self, src, dst):
+        if not self.dry_run:
+            linkto = os.readlink(src)
+            os.symlink(linkto, dst)
+
+    def __copy_dir(self, src, dst):
+        if not self.dry_run:
+            os.mkdir(dst)
 
     @staticmethod
     def __run_task(task, total_size, get_now_size):

@@ -44,8 +44,8 @@ def parse_general_args(parser):
                         default=argparse.SUPPRESS, help='Formatter mode for log messages')
     parser.add_argument('--log-path', action='store', dest='logger.file_path',
                         default=argparse.SUPPRESS, help='Path to config file')
-    parser.add_argument('--dry-run', choices=Logger.LEVELS, dest='logger.log_level',
-                        default=argparse.SUPPRESS, help='Level for logging to file')
+    parser.add_argument('--dry-run', action='store_true', dest='general.dry_run',
+                        default=argparse.SUPPRESS, help='Emulate run')
 
     print_config_group = parser.add_mutually_exclusive_group()
     print_config_group.add_argument('--toml', action='store_true', dest='toml',

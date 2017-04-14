@@ -53,6 +53,7 @@ class MagicTrasher(object):
                  conflict_resolve=SKIP,
                  recursive=False,
                  empty_dir=True,
+                 dry_run=False,
                  symlinks=False,
                  logger=None,
                  no_trash=False,
@@ -73,10 +74,12 @@ class MagicTrasher(object):
         self.recursive = recursive
         self.empty_dir = empty_dir
         self.no_trash = no_trash
+        self.dry_run = dry_run
 
         self.fs = MagicFs(
             conflict=conflict_resolve,
             force=force,
+            dry_run=dry_run,
             regexp=regexp,
             progress=progress,
             symlinks=symlinks,
@@ -174,15 +177,13 @@ class MagicTrasher(object):
             else:
                 return new_path
 
-        if not os.path.exists(self.path):
-            os.makedirs(self.path)
-
         if os.path.exists(path_in_trash):
             path_in_trash = inc_path(path_in_trash, 1)
 
         self.fs.move(path, path_in_trash)
 
-        self._meta_add(path_in_trash, path)
+        if not self.dry_run:
+            self._meta_add(path_in_trash, path)
 
 
     def _restore_item(self, item_name, item):
