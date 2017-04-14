@@ -7,7 +7,7 @@ def get_default_config_toml():
     return '''
 [general]
     ## Show progress for long operations
-    progress = true
+    # progress = true
 
     ## Ignore all errors
     # force=true
@@ -58,7 +58,7 @@ def get_default_config_json():
     return '''
 {
     "general: {
-        "progress": true,
+        "progress": false,
         "force": true,
     },
     "remove": {
