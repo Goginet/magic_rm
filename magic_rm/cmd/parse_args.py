@@ -34,7 +34,7 @@ def parse_args(mode):
     return vars(parser.parse_args()), ['general', 'remove', 'restore', 'trash', 'logger']
 
 def parse_general_args(parser):
-    parser.add_argument('--trash_path', action='store', dest='trash.trash_path',
+    parser.add_argument('--trash-path', action='store', dest='trash.path',
                         default=argparse.SUPPRESS, help='Path to trash directory')
     parser.add_argument('--log-level', choices=Logger.LEVELS, dest='logger.log_level',
                         default=argparse.SUPPRESS, help='Level for logging to file')
