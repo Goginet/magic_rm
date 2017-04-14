@@ -176,7 +176,8 @@ class MagicFs(object):
 
     def __unlink(self, path):
         if not self.dry_run:
-            os.unlink(path)
+            if os.path.islink(path):
+                os.unlink(path)
 
     def __rmdir(self, path):
         if not self.dry_run:

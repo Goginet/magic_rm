@@ -7,7 +7,7 @@ import datetime
 import os
 import pickle
 
-from magic_rm.accsess_checkers import check_go_inside
+from magic_rm.accsess_checkers import check_go_inside, check_access_file
 from magic_rm.fs import MagicFs, SKIP
 from magic_rm.errors import NotFoundError, NotExistsError, NotIndexedError, \
 NotEmptyError, CopyTrashIntoTrash
@@ -15,6 +15,7 @@ from magic_rm.logger import Logger
 
 
 def meta_update(func):
+    @check_access_file
     def wrapper(self, *args):
         trash_items = {}
 
@@ -65,7 +66,7 @@ class MagicTrasher(object):
                  retention=None):
 
         self.conflict_resolve = conflict_resolve
-        self.path = path
+        self.path = os.path.abspath(path)
         self.regexp = regexp
         self.progress = progress
         self.retention = retention
@@ -90,18 +91,18 @@ class MagicTrasher(object):
     """ Move file to trash """
     def remove(self, path):
 
+        path = os.path.abspath(path)
+
         self._preremove(path)
 
         self.flush()
-
-        path = os.path.abspath(path)
 
         path_in_trash = os.path.join(self.path, os.path.basename(path))
 
         if self.no_trash:
             self.fs.remove(path)
         else:
-            if path.startswith(self.path):
+            if self.path.startswith(path):
                 self.alert(
                     "Cannot copy trash dir, '{}', into itself".format(self.path),
                     Logger.ERROR,
@@ -197,10 +198,10 @@ class MagicTrasher(object):
         path_in_trash = os.path.join(self.path, item_name)
         real_path = item.get("real_path")
 
-        if os.path.exists(path_in_trash):
+        if os.path.exists(path_in_trash) or os.path.islink(path_in_trash):
             self.fs.move(path_in_trash, real_path)
         else:
-            self.logger.alert(
+            self.alert(
                 "Can't found '{}' item in trash. It's lost.",
                 Logger.ERROR,
                 NotIndexedError

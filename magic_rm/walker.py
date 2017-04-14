@@ -51,13 +51,7 @@ class MagicWalker(object):
         self.__used_symlinks = []
 
     def walk(self, path):
-        if os.path.exists(path):
-            self._walk(path)
-        else:
-            self.alert(
-                "Cannot find '{}': No such file or directory".format(path),
-                Logger.ERROR, NotFoundError
-            )
+        self._walk(path)
 
         self.__used_symlinks = []
 

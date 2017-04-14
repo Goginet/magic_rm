@@ -35,3 +35,6 @@ class GoInsideDirError(Error):
 
 class CopyTrashIntoTrash(Error):
     code = 208
+
+class WorkWithFileError(Error):
+    code = 209
