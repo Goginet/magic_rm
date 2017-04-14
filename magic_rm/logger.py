@@ -13,6 +13,7 @@ class Logger(object):
     INFO = "INFO"
     WARNING = "WARNING"
     ERROR = "ERROR"
+    SILENT = "SILENT"
 
     LEVELS = [DEBUG, INFO, WARNING, ERROR]
     FORMATS = [HUMAN, JSON]
@@ -43,16 +44,17 @@ class Logger(object):
             template = '%(asctime)s - %(levelname)s - %(message)s'
             formatter = logging.Formatter(template)
 
-        if self.file_path != None:
+        if self.file_path != None and self.log_level != self.SILENT:
             file_handler = logging.FileHandler(self.file_path)
             file_handler.setLevel(self._get_level(self.log_level))
             file_handler.setFormatter(formatter)
             logger.addHandler(file_handler)
 
-        stream_handler = logging.StreamHandler()
-        stream_handler.setLevel(self._get_level(self.verbose_level))
-        stream_handler.setFormatter(formatter)
-        logger.addHandler(stream_handler)
+        if self.verbose_level != self.SILENT:
+            stream_handler = logging.StreamHandler()
+            stream_handler.setLevel(self._get_level(self.verbose_level))
+            stream_handler.setFormatter(formatter)
+            logger.addHandler(stream_handler)
 
         return logger
 

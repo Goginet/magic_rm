@@ -37,10 +37,10 @@ def get_default_config_toml():
     conflict_resolve="SKIP"
 
 [logger]
-    ## Logging level (DEBUG|INFO|WARNING|ERROR)
+    ## Logging level (DEBUG|INFO|WARNING|ERROR|SILENT)
     log_level = "DEBUG"
 
-    ## Verbose level (DEBUG|INFO|WARNING|ERROR)
+    ## Verbose level (DEBUG|INFO|WARNING|ERROR|SILENT)
     verbose_level = "DEBUG"
 
     ## Logger format (JSON|TOML)

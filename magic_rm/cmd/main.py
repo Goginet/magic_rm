@@ -6,6 +6,7 @@ import json
 import os
 
 import toml
+import sys
 
 from magic_rm.cmd.parse_args import *
 from magic_rm.cmd.get_default_configs import *
@@ -111,6 +112,9 @@ def main(mode=REMOVE):
                 print get_default_config_toml()
 
     try:
+        if args['logger'].get('verbose_level') == Logger.SILENT:
+            sys.stdout = open(os.devnull, "w")
+
         run()
     except Error as err:
         exit(err.code)
