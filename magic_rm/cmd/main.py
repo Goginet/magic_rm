@@ -6,6 +6,7 @@ import json
 import os
 
 import toml
+import sys
 
 from magic_rm.cmd.parse_args import *
 from magic_rm.cmd.get_default_configs import *

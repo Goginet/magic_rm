@@ -9,7 +9,8 @@ import pickle
 
 from magic_rm.accsess_checkers import check_go_inside
 from magic_rm.fs import MagicFs, SKIP
-from magic_rm.errors import NotFoundError, NotExistsError, NotIndexedError, NotEmptyError
+from magic_rm.errors import NotFoundError, NotExistsError, NotIndexedError, \
+NotEmptyError, CopyTrashIntoTrash
 from magic_rm.logger import Logger
 
 
@@ -100,6 +101,12 @@ class MagicTrasher(object):
         if self.no_trash:
             self.fs.remove(path)
         else:
+            if path.startswith(self.path):
+                self.alert(
+                    "Cannot copy trash dir, '{}', into itself".format(self.path),
+                    Logger.ERROR,
+                    CopyTrashIntoTrash
+                )
             self._move_to_trash(path, path_in_trash)
 
     """ Restore item from trash """

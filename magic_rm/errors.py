@@ -32,3 +32,6 @@ class CopyError(Error):
 
 class GoInsideDirError(Error):
     code = 207
+
+class CopyTrashIntoTrash(Error):
+    code = 208
