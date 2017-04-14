@@ -6,7 +6,6 @@ import json
 import os
 
 import toml
-import sys
 
 from magic_rm.cmd.parse_args import *
 from magic_rm.cmd.get_default_configs import *
@@ -15,6 +14,10 @@ from magic_rm.errors import Error
 from magic_rm.logger import Logger
 from magic_rm.trasher import MagicTrasher
 
+def set_codec():
+    import sys
+    reload(sys)
+    sys.setdefaultencoding('UTF8')
 
 def grouped_args(args, new_args, *groups):
     for group in groups:
@@ -74,6 +77,7 @@ def get_args(mode):
     return grouped_args(args, config_args, *groups)
 
 def main(mode=REMOVE):
+    set_codec()
     args = get_args(mode)
 
     def create_trasher(logger):
