@@ -47,11 +47,11 @@ def get_default_config_toml():
     mode = "JSON"
 
     ## Log file path
-    file_path = "magic_rm.log"
+    file_path = "/var/log/magicrm/magicrm.log"
 
 [trash]
     ## Path to the trash dir
-    path = "trash"
+    path = "/var/lib/magicrm/trash"
 '''
 
 def get_default_config_json():
@@ -76,10 +76,10 @@ def get_default_config_json():
         "log_level": "DEBUG",
         "verbose_level": "DEBUG",
         "mode": "JSON",
-        "file_path": "magic_rm.log"
+        "file_path": "/var/log/magicrm/magicrm.log"
     },
     "trash": {
-        "path": "trash",
+        "path": "/var/lib/magicrm/trash",
     }
 }
 '''

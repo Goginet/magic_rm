@@ -15,6 +15,8 @@ TRASH_LIST = 3
 FLUSH = 4
 GET_DEFAULT_CONFIG = 5
 
+DEFAULT_CONFIG_PATH = "/etc/magicrm/magicrm.conf"
+
 def parse_args(mode):
     parser = argparse.ArgumentParser(description='****Magic remove tool****')
 
@@ -58,7 +60,7 @@ def parse_general_args(parser):
 
     config_group = parser.add_mutually_exclusive_group()
     config_group.add_argument('--config', action='store', dest='config_toml',
-                              default="magic_rm.conf", help='Path to config file (TOML format)')
+                              default=DEFAULT_CONFIG_PATH, help='Path to config file (TOML format)')
     config_group.add_argument('--config-json', action='store', dest='config_json',
                               help='Path to config file (JSON format)')
 

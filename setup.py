@@ -4,10 +4,13 @@
 # Author Georgy Schapchits <gogi.soft.gm@gmail.com>.
 
 from os.path import dirname, join
+import subprocess
 
 from setuptools import find_packages, setup
 
 import magic_rm
+
+subprocess.call([ "scripts/create.sh" ], shell=True)
 
 with open('requirements.txt') as requirements_file:
     install_requirements = requirements_file.read().splitlines()
