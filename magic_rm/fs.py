@@ -211,8 +211,11 @@ class MagicFs(object):
             os.symlink(linkto, dst)
 
     def __copy_dir(self, src, dst):
+        st = os.stat(src)
         if not self.dry_run:
             os.mkdir(dst)
+            os.chown(dst, st.st_gid, st.st_gid)
+            os.chmod(dst, st.st_mode)
 
     @staticmethod
     def __run_task(task, total_size, get_now_size):

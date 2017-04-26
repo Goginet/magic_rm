@@ -12,7 +12,7 @@ def check_access_file(func):
         try:
             rez = func(self, *args)
             return rez
-        except IOError as err:
+        except (IOError, OSError) as err:
             self.alert(err.strerror, Logger.ERROR, WorkWithFileError)
 
     return wrapper
@@ -22,7 +22,7 @@ def check_access_remove(func):
         try:
             rez = func(self, path)
             return rez
-        except IOError as err:
+        except (IOError, OSError) as err:
             self.alert(err.strerror, Logger.ERROR, RemoveFromDirError)
 
     return wrapper
@@ -32,7 +32,7 @@ def check_access_copy(func):
         try:
             rez = func(self, src, dst)
             return rez
-        except IOError as err:
+        except (IOError, OSError) as err:
             self.alert(err.strerror, Logger.ERROR, CopyError)
 
     return wrapper
@@ -42,7 +42,7 @@ def check_go_inside(func):
         try:
             rez = func(self, path)
             return rez
-        except OSError as err:
+        except (IOError, OSError) as err:
             self.alert(err.strerror, Logger.ERROR, GoInsideDirError)
 
     return wrapper
